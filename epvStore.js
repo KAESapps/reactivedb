@@ -13,6 +13,23 @@ const getEntitiesFrom = (epv, prop, value) => {
   })
   return entities
 }
+const groupEntitiesFrom = (epv, prop) => {
+  const group = {}
+  epv.forEach((e, k) => {
+    e.forEach((v, p) => {
+      if (p !== prop) return
+      if (typeof v === "function") v = v() //observable
+      let entities = group[v]
+      if (!entities) {
+        entities = [k]
+        group[v] = entities
+      } else {
+        entities.push(k)
+      }
+    })
+  })
+  return group
+}
 
 const patchEpv = (store, patch) => {
   const pvePatch = []
@@ -27,12 +44,14 @@ const patchEpv = (store, patch) => {
       let currentValue
       if (isObservable(v2)) {
         currentValue = v2()
+        if (pPatch === currentValue) return // pas de modif
         v2(pPatch) // si la valeur est observée, on stocke excplicitement null car on ne peut pas supprimer l'observable
       } else {
         currentValue = v2
         if (pPatch == null) {
           m1.delete(p)
         } else {
+          if (pPatch === currentValue) return // pas de modif
           m1.set(p, pPatch)
         }
       }
@@ -52,12 +71,40 @@ const patchPve = (store, patch) => {
     const obs = pMap.get(v)
     if (!obs) return
     const entities = obs()
+    const eIndex = entities.indexOf(e)
     if (add) {
+      if (e >= 0) return console.log("entity already indexed", p, v, e)
       entities.push(e)
     } else {
-      entities.splice(entities.indexOf(e), 1)
+      if (e < 0) return console.log("entity not indexed", p, v, e)
+      entities.splice(eIndex, 1)
     }
     obs(entities)
+  })
+}
+
+const patchGroupBy = (store, patch) => {
+  forEach(patch, ([p, v, e, add]) => {
+    let obs = store.get(p)
+    if (!obs) return
+    const group = obs()
+    let entities = group[v]
+    if (add) {
+      if (!entities) {
+        entities = [e]
+        group[v] = entities
+      } else {
+        entities.push(e)
+      }
+    } else {
+      // remove
+      if (entities.length === 1) {
+        delete group[v]
+      } else {
+        entities.splice(entities.indexOf(e), 1)
+      }
+    }
+    obs(group)
   })
 }
 
@@ -94,14 +141,30 @@ module.exports = epv => {
     }
     return e()
   }
+  // crée un groupByValue de façon lazy pour une prop
+  const groupByStore = new Map()
+  const getGroupBy = p => {
+    let group = groupByStore.get(p)
+    if (!group) {
+      group = observable(groupEntitiesFrom(epv, p), `entitesByValueOf::${p}`)
+      groupByStore.set(p, group)
+    }
+    return group()
+  }
 
   return {
     getFromEpv,
     getFromPve,
+    getGroupBy,
     patch: patch =>
       transaction(() => {
+        const timeLabel = "patchPve"
+        console.log(timeLabel)
+        console.time(timeLabel)
         const pvePatch = patchEpv(epv, patch)
         patchPve(pve, pvePatch)
+        patchGroupBy(groupByStore, pvePatch)
+        console.timeEnd(timeLabel)
       }),
   }
 }

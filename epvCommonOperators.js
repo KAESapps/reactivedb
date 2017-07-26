@@ -1,3 +1,4 @@
+const get = require("lodash/get")
 const sortBy = require("lodash/sortBy")
 const some = require("lodash/some")
 const filter = require("lodash/filter")
@@ -9,14 +10,29 @@ const last = require("lodash/last")
 const first = arr => arr && arr[0]
 const flatten = require("lodash/flatten")
 const sum = require("lodash/sum")
+const log = (fn, name) => (arg1, arg2) => {
+  const timeName = `computing ${name}: ${arg1}, ${arg2}`
+  console.time(timeName)
+  const res = fn(arg1, arg2)
+  console.timeEnd(timeName)
+  return res
+}
 
 module.exports = store => {
   const operators = {
-    entitiesWithValue: (prop, value) => store.getFromPve(prop, value),
+    entitiesWithValue: log(
+      (prop, value) => store.getFromPve(prop, value),
+      "entitiesWithValue"
+    ),
     entityWithValue: (prop, value) => last(store.getFromPve(prop, value)),
-    entitiesWithProp: (value, prop) => store.getFromPve(prop, value),
+    entitiesWithProp: log(
+      (value, prop) => store.getFromPve(prop, value),
+      "entitiesWithProp"
+    ),
     entityWithProp: (value, prop) => last(store.getFromPve(prop, value)),
     valueOfProp: (id, prop) => store.getFromEpv(id, prop),
+    entitiesByValueOf: prop => store.getGroupBy(prop),
+    getFromGroupBy: (groupBy, value) => get(groupBy, value, []),
     constant: (v1, v2) => (v2 != null ? v2 : v1), // dans le cas où il y a une source, constant est appelé avec 2 args mais c'est le 2ème qui compte
     first,
     last,

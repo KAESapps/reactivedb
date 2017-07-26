@@ -2,7 +2,7 @@
 const log = () => {}
 const last = require("lodash/last")
 const difference = function difference(setA, setB) {
-  setB.forEach(elm => setA.delete(elm))
+  setB.forEach((v, elm) => setA.delete(elm))
   return setA
 }
 
@@ -25,7 +25,7 @@ exports.observable = (arg, name) => {
 exports.Obs = function(initValue, onUnobserved, onObserved, name) {
   this.name = name
   this.value = initValue
-  this.observers = new Set()
+  this.observers = new Map() //new Set()
 }
 Object.assign(exports.Obs.prototype, {
   set: function(newValue) {
@@ -33,18 +33,19 @@ Object.assign(exports.Obs.prototype, {
     transactionLevel++
     this.value = newValue
     log("source changed", this.name)
-    this.observers.forEach(observer => observer.markStale())
+    this.observers.forEach((v, observer) => observer.markStale())
     transactionLevel--
     if (transactionLevel === 0) {
       autorunsNeedingRun.forEach(autorun => autorun.compute(autorun.unobserve))
-      autorunsNeedingRun = new Set()
+      autorunsNeedingRun = new Map() //new Set()
     }
   },
   get: function() {
     const currentlyRunning = last(currentlyRunningStack)
     if (currentlyRunning && !currentlyRunning.deps.has(this)) {
-      currentlyRunning.deps.add(this)
-      this.observers.add(currentlyRunning)
+      currentlyRunning.deps.set(this, true)
+      // this.observers.add(currentlyRunning)
+      this.observers.set(currentlyRunning, true)
       log("adding deps from source", this.name, "to", currentlyRunning.name)
     }
     return this.value
@@ -59,8 +60,8 @@ Object.assign(exports.Obs.prototype, {
 exports.Computed = function(fn, onUnobserved, onObserved, name) {
   this.name = name
   this.stale = true
-  this.observers = new Set()
-  this.deps = new Set()
+  this.observers = new Map() //new Set()
+  this.deps = new Map() //new Set()
   this.fn = fn
 }
 Object.assign(exports.Computed.prototype, {
@@ -68,31 +69,37 @@ Object.assign(exports.Computed.prototype, {
     if (this.stale) return // pas besoin de recommencer si on a déjà été marqué stale
     this.stale = true
     log(this.name, "computed marked stale")
-    this.observers.forEach(observer => observer.markStale())
+    this.observers.forEach((v, observer) => observer.markStale())
   },
   compute: function() {
     log("computing", this.name)
     this.oldDeps = this.deps
-    this.deps = new Set()
+    this.deps = new Map() //new Set()
     currentlyRunningStack.push(this)
+    console.time("computing " + this.name)
     this.value = this.fn()
+    console.timeEnd("computing " + this.name)
     currentlyRunningStack.pop()
     this.stale = false
-    difference(this.oldDeps, this.deps).forEach(dep => dep.removeObserver(this))
+    console.time("removingOldDeps " + this.name)
+    difference(this.oldDeps, this.deps).forEach((v, dep) =>
+      dep.removeObserver(this)
+    )
+    console.timeEnd("removingOldDeps " + this.name)
   },
   removeObserver: function(observer) {
     log("removing deps from computed", this.name, "to", observer.name)
     this.observers.delete(observer)
     if (this.observers.size === 0) {
-      this.deps.forEach(dep => dep.removeObserver(this))
+      this.deps.forEach((v, dep) => dep.removeObserver(this))
       this.stale = true // déclenche le recomputing lors de la prochaine observation
     }
   },
   get: function() {
     const currentlyRunning = last(currentlyRunningStack)
     if (currentlyRunning && !currentlyRunning.deps.has(this)) {
-      currentlyRunning.deps.add(this)
-      this.observers.add(currentlyRunning)
+      currentlyRunning.deps.set(this, true)
+      this.observers.set(currentlyRunning, true)
       log("adding deps from computed", this.name, "to", currentlyRunning.name)
     }
     if (this.stale) this.compute()
@@ -103,7 +110,7 @@ Object.assign(exports.Computed.prototype, {
 const autorun = (exports.autorun = (fn, name) => {
   const me = {
     name,
-    deps: new Set(),
+    deps: new Map(), //new Set(),
     markStale: () => {
       log("autorun marked stale", name)
       autorunsNeedingRun.add(me)
@@ -115,28 +122,28 @@ const autorun = (exports.autorun = (fn, name) => {
       me.canceledDuringRun = true
       log("canceling during run", name)
     } else {
-      me.deps.forEach(dep => dep.removeObserver(me))
+      me.deps.forEach((v, dep) => dep.removeObserver(me))
       autorunsNeedingRun.delete(me)
-      me.deps = new Set()
+      me.deps = new Map() //new Set()
       log("cancelled", name)
     }
   }
   me.compute = cancel => {
     log("computing autorun", name)
     me.oldDeps = me.deps
-    me.deps = new Set()
+    me.deps = new Map() //new Set()
     currentlyRunningStack.push(me)
     fn(cancel)
     currentlyRunningStack.pop()
     if (me.canceledDuringRun) {
       // si on a été annulé en cours de run, il faut vider la liste des dépendances qui se sont auto enregistrées
-      me.deps.forEach(dep => dep.removeObserver(me))
+      me.deps.forEach((v, dep) => dep.removeObserver(me))
       autorunsNeedingRun.delete(me)
-      me.deps = new Set()
+      me.deps = new Map() //new Set()
       me.canceledDuringRun = false
       log("autorun cancelled during run", name)
     }
-    difference(me.oldDeps, me.deps).forEach(dep => dep.removeObserver(me))
+    difference(me.oldDeps, me.deps).forEach((v, dep) => dep.removeObserver(me))
   }
   me.compute(me.unobserve)
   return me.unobserve
