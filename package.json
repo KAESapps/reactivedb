@@ -9,11 +9,7 @@
     "type": "git",
     "url": "git+https://github.com/KAESapps/reactivedb.git"
   },
-  "keywords": [
-    "db",
-    "reactive",
-    "realtime"
-  ],
+  "keywords": ["db", "reactive", "realtime"],
   "author": "KaeS",
   "license": "MIT",
   "bugs": {
@@ -24,6 +20,6 @@
     "fs-extra": "4.0.0",
     "ld-jsonstream": "1.0.0",
     "lodash": "4.17.4",
-    "sanitize-filename": "1.6.1",
+    "sanitize-filename": "1.6.1"
   }
 }
