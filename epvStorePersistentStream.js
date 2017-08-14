@@ -5,7 +5,6 @@ const create = require("lodash/create")
 const epvStore = require("./epvStore")
 const { set, unset } = require("./kkvHelpers")
 const LDJSONStream = require("ld-jsonstream")
-const forEach = require("lodash/forEach")
 const streamOfStreams = require("./streamOfStreams")
 const Readable = require("stream").Readable
 
@@ -140,33 +139,41 @@ module.exports = dirPath => {
           var timeLabel = "persisting patch"
           console.time(timeLabel)
           const keys = Object.keys(patch)
-          const length = keys.length
-          console.log("start", timeLabel, length, "entries")
+          const entriesCount = keys.length
+          console.log("start", timeLabel, entriesCount, "entries")
 
           let i = 0
+          let j = 0
           let count = 0
           let countInterventions = 0
           ws.once("error", reject)
 
-          const read = write => {
-            if (i === length) {
-              write(null)
+          const reader = write => {
+            if (i === entriesCount) {
               console.log(count, "rows writen")
               console.log(countInterventions, "interventions writen")
               console.timeEnd(timeLabel)
+              write(null)
               resolve()
             } else {
               const k1 = keys[i]
               const entityPatch = patch[k1]
-              forEach(entityPatch, (v2, k2) => {
-                write(JSON.stringify([k1, k2, v2]) + "\n")
-                if (v2 === "intervention") countInterventions++
-                count++
-              })
-              i++
+              const props = Object.keys(entityPatch)
+              const k2 = props[j]
+              const v2 = entityPatch[k2]
+              if (v2 === "intervention") countInterventions++
+              count++
+              j++
+              const propsCount = props.length
+              if (j === propsCount) {
+                j = 0
+                i++
+              }
+              // appel write après la mise à jour des compteurs car cela peut déclencher une nouvelle lecture en synchrone
+              write(JSON.stringify([k1, k2, v2]) + "\n")
             }
           }
-          rss.pushReader(read)
+          rss.pushReader(reader)
         })
       }
       return create(store, { patch: patchAndSave })

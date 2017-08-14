@@ -1,17 +1,19 @@
 const Readable = require("stream").Readable
 
+// permet de créer une readable stream à partir d'une succession de readers (version simplifiée d'une readable stream)
+
 module.exports = () => {
   const readers = []
   let waiting, write
   const rss = Readable()
   const tryToRead = () => {
-    const read = readers[0]
-    if (read) {
-      rss.push(read(write))
+    const reader = readers[0]
+    if (reader) {
+      reader(write)
     } else {
-      waiting = read => {
+      waiting = reader => {
         waiting = null
-        rss.push(read(write))
+        reader(write)
       }
     }
   }
@@ -24,9 +26,9 @@ module.exports = () => {
     }
   }
   rss._read = tryToRead
-  rss.pushReader = rs => {
-    readers.push(rs)
-    if (waiting) waiting(rs)
+  rss.pushReader = reader => {
+    readers.push(reader)
+    if (waiting) waiting(reader)
   }
   return rss
 }
