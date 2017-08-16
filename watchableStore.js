@@ -4,8 +4,8 @@ const create = require("lodash/create")
 module.exports = (store, send) => {
   const unwatchs = new Map()
 
-  const watch = query => {
-    const watchId = JSON.stringify(query)
+  const watch = watchId => {
+    const query = JSON.parse(watchId)
     unwatchs.set(
       watchId,
       autorun(() => {
@@ -16,10 +16,9 @@ module.exports = (store, send) => {
     console.log("watching query", query)
     return Promise.resolve("done")
   }
-  const unwatch = query => {
-    const watchId = JSON.stringify(query)
+  const unwatch = watchId => {
     unwatchs.get(watchId)()
-    console.log("stop watching query", query)
+    console.log("stop watching query", watchId)
     return Promise.resolve("done")
   }
   const destroy = () => {

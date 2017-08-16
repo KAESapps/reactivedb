@@ -1,63 +1,49 @@
-const shortid = require("shortid")
+const clientRaw = require("./client-raw")
+const { Obs } = require("./obs")
+const unwatchDelay = 30 * 1000 // server unwatch is called if UI is not observing during 30 seconds
 
 module.exports = ws => {
-  const resolvers = new Map()
-  const listeners = new Map()
+  const queriesCache = new Map()
+  const pendingUnwatch = new Map()
 
-  ws.on("message", message => {
-    const data = JSON.parse(message)
-    // console.log("message received", data)
-    if (data.callId) {
-      const resolver = resolvers.get(data.callId)
-      if (!resolver) {
-        return console.error("no handler for message", message)
-      }
-      if (data.err) {
-        return resolver.reject(data.err)
-      } else {
-        return resolver.resolve(data.res)
-      }
-    }
-    if (data.watchId) {
-      const listener = listeners.get(data.watchId)
-      if (!listener) {
-        return console.error("no listener for message", message)
-      }
-      return listener(data.value)
-    }
-  })
+  const { watch, unwatch, patch } = clientRaw(ws)
 
-  const call = (method, arg) =>
-    new Promise((resolve, reject) => {
-      const callId = shortid.generate()
-      resolvers.set(callId, { resolve, reject })
-      ws.send(
-        JSON.stringify({
-          callId,
-          method,
-          arg,
-        })
+  const query = q => {
+    const key = JSON.stringify(q)
+    let obs = queriesCache.get(key)
+    const cancelPendingUnwatch = pendingUnwatch.get(key)
+    if (cancelPendingUnwatch) {
+      clearTimeout(cancelPendingUnwatch)
+    }
+    if (!obs) {
+      const onUnobserved = () => {
+        pendingUnwatch.set(
+          key,
+          setTimeout(() => {
+            unwatch(key).catch(err => {
+              console.error("Error stoping to watch query", q, err)
+            })
+            queriesCache.delete(key)
+            pendingUnwatch.delete(key)
+            console.log("unwatched query", q)
+          }, unwatchDelay)
+        )
+        console.log("query scheduled to be unwatched", q)
+      }
+      obs = new Obs(
+        { loaded: false, value: undefined },
+        onUnobserved,
+        null,
+        key
       )
-    })
-
-  const patch = p => call("patch", p)
-  const query = p => call("query", p)
-
-  const watch = (query, listener) => {
-    const watchId = JSON.stringify(query)
-    listeners.set(watchId, listener)
-    return call("watch", query)
-  }
-  const unwatch = query => {
-    const watchId = JSON.stringify(query)
-    listeners.delete(watchId)
-    return call("unwatch", query)
+      queriesCache.set(key, obs)
+      // start watching server
+      watch(key, value => obs.set({ loaded: true, value })).catch(err => {
+        console.error("Error starting to watch query", q, err)
+      })
+    }
+    return obs.get()
   }
 
-  const close = () => {
-    ws.close()
-    //TODO: vider les registres ?
-  }
-
-  return { watch, unwatch, query, call, patch, close }
+  return { patch, query }
 }

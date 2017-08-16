@@ -1,7 +1,7 @@
 console.info("Loading reactivedb/obs")
 
-// const log = console.log
-const log = () => {}
+const log = console.log
+// const log = () => {}
 const last = require("lodash/last")
 const difference = function difference(setA, setB) {
   setB.forEach(elm => setA.delete(elm))
@@ -9,6 +9,7 @@ const difference = function difference(setA, setB) {
 }
 
 let autorunsNeedingRun = new Set()
+let maybeUnobserved = new Set()
 let currentlyRunningStack = []
 let transactionLevel = 0
 
@@ -28,6 +29,7 @@ exports.Obs = function(initValue, onUnobserved, onObserved, name) {
   this.name = name
   this.value = initValue
   this.observers = new Set()
+  this.onUnobserved = onUnobserved
 }
 Object.assign(exports.Obs.prototype, {
   set: function(newValue) {
@@ -40,6 +42,8 @@ Object.assign(exports.Obs.prototype, {
     if (transactionLevel === 0) {
       autorunsNeedingRun.forEach(autorun => autorun.compute(autorun.unobserve))
       autorunsNeedingRun = new Set()
+      maybeUnobserved.forEach(obs => obs.notifyIfUnobserved())
+      maybeUnobserved = new Set()
     }
   },
   get: function() {
@@ -54,7 +58,15 @@ Object.assign(exports.Obs.prototype, {
   removeObserver: function(observer) {
     log("removing deps from source", this.name, "to", observer.name)
     this.observers.delete(observer)
-    log("observers of", this.name, this.observers)
+    log("observers of", this.name, this.observers.size, this.observers)
+    if (this.observers.size === 0) maybeUnobserved.add(this)
+  },
+  notifyIfUnobserved: function() {
+    // after running all autorun, if this.observers is still empty, we can notify that we are unobserved
+    if (this.observers.size === 0) {
+      log("notify unobserved", this.name)
+      this.onUnobserved()
+    }
   },
 })
 
@@ -120,6 +132,8 @@ const autorun = (exports.autorun = (fn, name) => {
       me.deps.forEach(dep => dep.removeObserver(me))
       autorunsNeedingRun.delete(me)
       me.deps = new Set()
+      maybeUnobserved.forEach(obs => obs.notifyIfUnobserved())
+      maybeUnobserved = new Set()
       log("cancelled", name)
     }
   }
@@ -151,6 +165,8 @@ exports.transaction = fn => {
   if (transactionLevel === 0) {
     autorunsNeedingRun.forEach(autorun => autorun.compute(autorun.unobserve))
     autorunsNeedingRun = new Set()
+    maybeUnobserved.forEach(obs => obs.notifyIfUnobserved())
+    maybeUnobserved = new Set()
   }
 }
 
