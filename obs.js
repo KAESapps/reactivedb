@@ -1,7 +1,7 @@
 console.info("Loading reactivedb/obs")
 
-const log = console.log
-// const log = () => {}
+// const log = console.log
+const log = () => {}
 const last = require("lodash/last")
 const difference = function difference(setA, setB) {
   setB.forEach(elm => setA.delete(elm))
@@ -63,7 +63,7 @@ Object.assign(exports.Obs.prototype, {
   },
   notifyIfUnobserved: function() {
     // after running all autorun, if this.observers is still empty, we can notify that we are unobserved
-    if (this.observers.size === 0) {
+    if (this.onUnobserved && this.observers.size === 0) {
       log("notify unobserved", this.name)
       this.onUnobserved()
     }
