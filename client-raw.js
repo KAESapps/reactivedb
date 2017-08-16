@@ -4,8 +4,8 @@ module.exports = ws => {
   const resolvers = new Map()
   const listeners = new Map()
 
-  ws.on("message", message => {
-    const data = JSON.parse(message)
+  ws.onmessage = message => {
+    const data = JSON.parse(message.data)
     // console.log("message received", data)
     if (data.callId) {
       const resolver = resolvers.get(data.callId)
@@ -25,7 +25,7 @@ module.exports = ws => {
       }
       return listener(data.value)
     }
-  })
+  }
 
   const call = (method, arg) =>
     new Promise((resolve, reject) => {
