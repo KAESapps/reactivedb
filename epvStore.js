@@ -1,5 +1,5 @@
-const { observable, transaction } = require("./obs")
-const isObservable = require("lodash/isFunction")
+const { transaction, Obs } = require("./obs") // on utilise Obs directement plutôt que observable car ça évite des closures inutiles, ça permet de bypasser le getter quand on n'a pas besoin de s'abonner à l'observable et de toute façon les observables ne sont pas exposés au public
+const isObservable = o => o && o.get
 const forEach = require("lodash/forEach")
 
 const getEntitiesFrom = (epv, prop, value) => {
@@ -7,7 +7,7 @@ const getEntitiesFrom = (epv, prop, value) => {
   epv.forEach((e, k) => {
     e.forEach((v, p) => {
       if (p !== prop) return
-      if (typeof v === "function") v = v.value //observable : on lit directement la valeur sans passer par le getter pour ne pas enregistrer de dépendance car c'est pour créer un observable sera mis à jour directement
+      if (isObservable(v)) v = v.value //observable : on lit directement la valeur sans passer par le getter pour ne pas enregistrer de dépendance car c'est pour créer un observable sera mis à jour directement
       if (v === value) entities.push(k)
     })
   })
@@ -18,7 +18,7 @@ const groupEntitiesByValueOfProp = (epv, prop) => {
   epv.forEach((e, k) => {
     e.forEach((v, p) => {
       if (p !== prop) return
-      if (typeof v === "function") v = v.value //observable
+      if (isObservable(v)) v = v.value //observable
       let entities = group[v]
       if (!entities) {
         entities = [k]
@@ -35,7 +35,7 @@ const collectEntitiesAndValueOfProp = (epv, prop) => {
   epv.forEach((e, k) => {
     e.forEach((v, p) => {
       if (p !== prop) return
-      if (typeof v === "function") v = v.value //observable
+      if (isObservable(v)) v = v.value //observable
       entities[k] = v
     })
   })
@@ -54,9 +54,9 @@ const patchEpv = (store, patch) => {
       const v2 = m1.get(p)
       let currentValue
       if (isObservable(v2)) {
-        currentValue = v2()
+        currentValue = v2.value
         if (pPatch === currentValue) return // pas de modif
-        v2(pPatch) // si la valeur est observée, on stocke excplicitement null car on ne peut pas supprimer l'observable
+        v2.set(pPatch) // si la valeur est observée, on stocke excplicitement null car on ne peut pas supprimer l'observable
       } else {
         currentValue = v2
         if (pPatch == null) {
@@ -81,7 +81,7 @@ const patchPve = (store, pvePatch) => {
     if (!pMap) return
     const obs = pMap.get(v)
     if (!obs) return
-    const entities = obs()
+    const entities = obs.value
     const eIndex = entities.indexOf(e)
     if (add) {
       if (e >= 0) return console.log("entity already indexed", p, v, e)
@@ -90,7 +90,7 @@ const patchPve = (store, pvePatch) => {
       if (e < 0) return console.log("entity not indexed", p, v, e)
       entities.splice(eIndex, 1)
     }
-    obs(entities)
+    obs.set(entities)
   })
 }
 
@@ -98,7 +98,7 @@ const patchGroupBy = (store, pvePatch) => {
   forEach(pvePatch, ([p, v, e, add]) => {
     let obs = store.get(p)
     if (!obs) return
-    const group = obs()
+    const group = obs.value
     let entities = group[v]
     if (add) {
       if (!entities) {
@@ -115,7 +115,7 @@ const patchGroupBy = (store, pvePatch) => {
         entities.splice(entities.indexOf(e), 1)
       }
     }
-    obs(group)
+    obs.set(group)
   })
 }
 
@@ -124,11 +124,11 @@ const patchP_ev = (store, epvPatch) => {
     forEach(ePatch, (v, p) => {
       let obs = store.get(p)
       if (!obs) return
-      const entities = obs()
+      const entities = obs.value
       if (entities[e] !== v) {
         // on ne modifie pas l'observable si pas de changement
         entities[e] = v
-        obs(entities) // on déclenche la notification de la modif de l'observable
+        obs.set(entities) // on déclenche la notification de la modif de l'observable
       }
     })
   })
@@ -146,10 +146,15 @@ module.exports = epv => {
     }
     let pValue = eMap.get(p)
     if (!isObservable(pValue)) {
-      pValue = observable(pValue != null ? pValue : null, `epv::${e}::${p}`)
+      pValue = new Obs(
+        pValue != null ? pValue : null,
+        null,
+        null,
+        `epv::${e}::${p}`
+      )
       eMap.set(p, pValue)
     }
-    return pValue()
+    return pValue.get()
   }
   // crée un observable de e de façon lazy ainsi que la structure intermédiaire si besoin
   const pve = new Map()
@@ -162,36 +167,38 @@ module.exports = epv => {
     let e = pMap.get(v)
     if (!e) {
       const eValue = getEntitiesFrom(epv, p, v)
-      e = observable(eValue, `pve::${p}::${v}`)
+      e = new Obs(eValue, null, null, `pve::${p}::${v}`)
       pMap.set(v, e)
     }
-    return e()
+    return e.get()
   }
   // crée un groupByValue de façon lazy pour une prop
   const p_ve = new Map()
   const getFromP_ve = p => {
     let group = p_ve.get(p)
     if (!group) {
-      group = observable(
+      group = new Obs(
         groupEntitiesByValueOfProp(epv, p),
         `entitesByValueOf::${p}`
       )
       p_ve.set(p, group)
     }
-    return group()
+    return group.get()
   }
   // crée à la demande un observable par propriété contenant un objet ev
   const p_ev = new Map()
   const getFromP_ev = p => {
     let group = p_ev.get(p)
     if (!group) {
-      group = observable(
+      group = new Obs(
         collectEntitiesAndValueOfProp(epv, p),
+        null,
+        null,
         `entitesWithValueFor::${p}`
       )
       p_ev.set(p, group)
     }
-    return group()
+    return group.get()
   }
 
   return {
