@@ -201,14 +201,14 @@ module.exports = epv => {
     getFromP_ev,
     patch: patch =>
       transaction(() => {
-        const timeLabel = "patchPve"
-        console.log(timeLabel)
-        console.time(timeLabel)
+        // const timeLabel = "patchPve"
+        // console.log(timeLabel)
+        // console.time(timeLabel)
         const pvePatch = patchEpv(epv, patch)
         patchP_ev(p_ev, patch)
         patchPve(pve, pvePatch)
         patchGroupBy(p_ve, pvePatch)
-        console.timeEnd(timeLabel)
+        // console.timeEnd(timeLabel)
       }),
   }
 }

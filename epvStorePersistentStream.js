@@ -136,23 +136,23 @@ module.exports = dirPath => {
         store.patch(patch)
         // and then persist it
         return new Promise((resolve, reject) => {
-          var timeLabel = "persisting patch"
-          console.time(timeLabel)
+          // var timeLabel = "persisting patch"
+          // console.time(timeLabel)
           const keys = Object.keys(patch)
           const entriesCount = keys.length
-          console.log("start", timeLabel, entriesCount, "entries")
+          // console.log("start", timeLabel, entriesCount, "entries")
 
           let i = 0
           let j = 0
-          let count = 0
-          let countInterventions = 0
-          ws.once("error", reject)
+          // let count = 0
+          // let countInterventions = 0
+          // ws.once("error", reject)
 
           const reader = write => {
             if (i === entriesCount) {
-              console.log(count, "rows writen")
-              console.log(countInterventions, "interventions writen")
-              console.timeEnd(timeLabel)
+              // console.log(count, "rows writen")
+              // console.log(countInterventions, "interventions writen")
+              // console.timeEnd(timeLabel)
               write(null)
               resolve()
             } else {
@@ -161,8 +161,8 @@ module.exports = dirPath => {
               const props = Object.keys(entityPatch)
               const k2 = props[j]
               const v2 = entityPatch[k2]
-              if (v2 === "intervention") countInterventions++
-              count++
+              // if (v2 === "intervention") countInterventions++
+              // count++
               j++
               const propsCount = props.length
               if (j === propsCount) {
