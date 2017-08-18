@@ -7,18 +7,18 @@ const getEntitiesFrom = (epv, prop, value) => {
   epv.forEach((e, k) => {
     e.forEach((v, p) => {
       if (p !== prop) return
-      if (typeof v === "function") v = v() //observable
+      if (typeof v === "function") v = v.value //observable : on lit directement la valeur sans passer par le getter pour ne pas enregistrer de dépendance car c'est pour créer un observable sera mis à jour directement
       if (v === value) entities.push(k)
     })
   })
   return entities
 }
-const groupEntitiesFrom = (epv, prop) => {
+const groupEntitiesByValueOfProp = (epv, prop) => {
   const group = {}
   epv.forEach((e, k) => {
     e.forEach((v, p) => {
       if (p !== prop) return
-      if (typeof v === "function") v = v() //observable
+      if (typeof v === "function") v = v.value //observable
       let entities = group[v]
       if (!entities) {
         entities = [k]
@@ -29,6 +29,17 @@ const groupEntitiesFrom = (epv, prop) => {
     })
   })
   return group
+}
+const collectEntitiesAndValueOfProp = (epv, prop) => {
+  const entities = {}
+  epv.forEach((e, k) => {
+    e.forEach((v, p) => {
+      if (p !== prop) return
+      if (typeof v === "function") v = v.value //observable
+      entities[k] = v
+    })
+  })
+  return entities
 }
 
 const patchEpv = (store, patch) => {
@@ -64,8 +75,8 @@ const patchEpv = (store, patch) => {
 }
 
 // ceci n'est pas la source de vérité, ce n'est qu'un index, donc on n'y stocke que des observables actifs que l'on mute en fonction du patch
-const patchPve = (store, patch) => {
-  forEach(patch, ([p, v, e, add]) => {
+const patchPve = (store, pvePatch) => {
+  forEach(pvePatch, ([p, v, e, add]) => {
     let pMap = store.get(p)
     if (!pMap) return
     const obs = pMap.get(v)
@@ -83,8 +94,8 @@ const patchPve = (store, patch) => {
   })
 }
 
-const patchGroupBy = (store, patch) => {
-  forEach(patch, ([p, v, e, add]) => {
+const patchGroupBy = (store, pvePatch) => {
+  forEach(pvePatch, ([p, v, e, add]) => {
     let obs = store.get(p)
     if (!obs) return
     const group = obs()
@@ -105,6 +116,21 @@ const patchGroupBy = (store, patch) => {
       }
     }
     obs(group)
+  })
+}
+
+const patchP_ev = (store, epvPatch) => {
+  forEach(epvPatch, (ePatch, e) => {
+    forEach(ePatch, (v, p) => {
+      let obs = store.get(p)
+      if (!obs) return
+      const entities = obs()
+      if (entities[e] !== v) {
+        // on ne modifie pas l'observable si pas de changement
+        entities[e] = v
+        obs(entities) // on déclenche la notification de la modif de l'observable
+      }
+    })
   })
 }
 
@@ -142,12 +168,28 @@ module.exports = epv => {
     return e()
   }
   // crée un groupByValue de façon lazy pour une prop
-  const groupByStore = new Map()
-  const getGroupBy = p => {
-    let group = groupByStore.get(p)
+  const p_ve = new Map()
+  const getFromP_ve = p => {
+    let group = p_ve.get(p)
     if (!group) {
-      group = observable(groupEntitiesFrom(epv, p), `entitesByValueOf::${p}`)
-      groupByStore.set(p, group)
+      group = observable(
+        groupEntitiesByValueOfProp(epv, p),
+        `entitesByValueOf::${p}`
+      )
+      p_ve.set(p, group)
+    }
+    return group()
+  }
+  // crée à la demande un observable par propriété contenant un objet ev
+  const p_ev = new Map()
+  const getFromP_ev = p => {
+    let group = p_ev.get(p)
+    if (!group) {
+      group = observable(
+        collectEntitiesAndValueOfProp(epv, p),
+        `entitesWithValueFor::${p}`
+      )
+      p_ev.set(p, group)
     }
     return group()
   }
@@ -155,15 +197,17 @@ module.exports = epv => {
   return {
     getFromEpv,
     getFromPve,
-    getGroupBy,
+    getFromP_ve,
+    getFromP_ev,
     patch: patch =>
       transaction(() => {
         const timeLabel = "patchPve"
         console.log(timeLabel)
         console.time(timeLabel)
         const pvePatch = patchEpv(epv, patch)
+        patchP_ev(p_ev, patch)
         patchPve(pve, pvePatch)
-        patchGroupBy(groupByStore, pvePatch)
+        patchGroupBy(p_ve, pvePatch)
         console.timeEnd(timeLabel)
       }),
   }

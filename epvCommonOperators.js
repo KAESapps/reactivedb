@@ -9,6 +9,7 @@ const difference = require("lodash/difference")
 const last = require("lodash/last")
 const first = arr => arr && arr[0]
 const flatten = require("lodash/flatten")
+const take = require("lodash/take")
 const sum = require("lodash/sum")
 const log = (fn, name) => (arg1, arg2) => {
   const timeName = `computing ${name}: ${arg1}, ${arg2}`
@@ -31,13 +32,15 @@ module.exports = store => {
     ),
     entityWithProp: (value, prop) => last(store.getFromPve(prop, value)),
     valueOfProp: (id, prop) => store.getFromEpv(id, prop),
-    entitiesByValueOf: prop => store.getGroupBy(prop),
+    entitiesByValueOf: prop => store.getFromP_ve(prop),
+    entitiesAndValueOfProp: prop => store.getFromP_ev(prop),
     getFromGroupBy: (groupBy, value) => get(groupBy, value, []),
     constant: (v1, v2) => (v2 != null ? v2 : v1), // dans le cas où il y a une source, constant est appelé avec 2 args mais c'est le 2ème qui compte
     first,
     last,
     flatten,
     sum,
+    take,
     count: arr => arr.length,
     reverse,
     some,
