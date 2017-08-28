@@ -1,4 +1,4 @@
-const { observable } = require('ks-data/obs')
+const { observable } = require("./obs")
 
 // const has = (map, key1, key2) => {
 //   if (!map.has(key1)) return false
