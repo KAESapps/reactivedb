@@ -186,3 +186,11 @@ exports.repeatWhen = (canRun, cb, name) => {
   autorun(autorunFn, "repeatWhenInit")
   return () => (repeat = false)
 }
+
+exports.observe = function(obs, cb) {
+  return () =>
+    autorun(function() {
+      obs()
+      setTimeout(cb)
+    })
+}
