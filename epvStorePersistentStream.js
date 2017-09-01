@@ -17,7 +17,6 @@ const monitor = (timeLabel, task) => () => {
   })
 }
 
-// storage must conform to the flat-file-db interface
 module.exports = dirPath => {
   // auto load
   const data = new Map()
