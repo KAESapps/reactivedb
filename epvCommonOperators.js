@@ -22,6 +22,7 @@ const log = (fn, name) => (arg1, arg2) => {
 
 module.exports = store => {
   const operators = {
+    entitiesMatching: filter => store.getEntitiesMatching(filter),
     entitiesWithValue: log(
       (prop, value) => store.getFromPve(prop, value),
       "entitiesWithValue"

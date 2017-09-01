@@ -1,6 +1,9 @@
 const { transaction, Obs } = require("./obs") // on utilise Obs directement plutôt que observable car ça évite des closures inutiles, ça permet de bypasser le getter quand on n'a pas besoin de s'abonner à l'observable et de toute façon les observables ne sont pas exposés au public
 const isObservable = o => o && o.get
 const forEach = require("lodash/forEach")
+const includes = require("lodash/includes")
+const pull = require("lodash/pull")
+const every = require("lodash/every")
 
 const getEntitiesFrom = (epv, prop, value) => {
   const entities = []
@@ -134,6 +137,48 @@ const patchP_ev = (store, epvPatch) => {
   })
 }
 
+const entitiesContains = includes
+const entitiesRemove = pull
+const entitiesAdd = (entities, e) => entities.push(e)
+const match = (filter, pv) =>
+  every(filter, (expectedValue, k) => {
+    const v = pv.get(k)
+    if (isObservable(v)) v = v.value
+    return v === expectedValue
+  })
+
+const patchMatchingResults = (store, epvPatch, epv) => {
+  store.forEach((matchingResult, serializedFilter) => {
+    const entities = matchingResult.value
+    let entitiesChanged = false
+    const filter = JSON.parse(serializedFilter)
+    forEach(epvPatch, (ePatch, e) => {
+      const pv = epv.get(e)
+      if (match(filter, pv)) {
+        // si e est déjà dans les résultats, rien à faire, sinon...
+        if (!entitiesContains(entities, e)) {
+          entitiesAdd(entities, e)
+          entitiesChanged = true
+        }
+      } else {
+        // si e n'est pas dans les résultats, rien à faire, sinon...
+        if (entitiesContains(entities, e)) {
+          entitiesRemove(entities, e)
+          entitiesChanged = true
+        }
+      }
+    })
+    if (entitiesChanged) matchingResult.set(entities) // notifiy observers
+  })
+}
+const collectEntitiesMatching = (epv, filter) => {
+  const data = []
+  epv.forEach((pv, e) => {
+    if (match(filter, pv)) data.push(e)
+  })
+  return data
+}
+
 // epv doit être un map de maps de valeurs serialisables en JSON
 module.exports = epv => {
   if (!epv) epv = new Map()
@@ -203,11 +248,29 @@ module.exports = epv => {
     return group.get()
   }
 
+  // crée une liste d'entités de façon lazy positives à un filtre
+  const matchingResults = new Map()
+  const getEntitiesMatching = filter => {
+    const serializedFilter = JSON.stringify(filter)
+    let result = matchingResults.get(serializedFilter)
+    if (!result) {
+      result = new Obs(
+        collectEntitiesMatching(epv, filter),
+        null,
+        null,
+        `entitesMatching::${serializedFilter}`
+      )
+      matchingResults.set(serializedFilter, result)
+    }
+    return result.get()
+  }
+
   return {
     getFromEpv,
     getFromPve,
     getFromP_ve,
     getFromP_ev,
+    getEntitiesMatching,
     patch: patch =>
       transaction(() => {
         // const timeLabel = "patchPve"
@@ -217,6 +280,7 @@ module.exports = epv => {
         patchP_ev(p_ev, patch)
         patchPve(pve, pvePatch)
         patchGroupBy(p_ve, pvePatch)
+        patchMatchingResults(matchingResults, patch, epv) //le patch doit déjà être appliqué sur epv avant de lancer ce traitement
         // console.timeEnd(timeLabel)
       }),
   }
