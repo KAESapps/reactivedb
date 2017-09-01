@@ -179,6 +179,8 @@ module.exports = epv => {
     if (!group) {
       group = new Obs(
         groupEntitiesByValueOfProp(epv, p),
+        null,
+        null,
         `entitesByValueOf::${p}`
       )
       p_ve.set(p, group)

@@ -191,6 +191,6 @@ exports.observe = function(obs, cb) {
   return () =>
     autorun(function() {
       obs()
-      setTimeout(cb)
+      setTimeout(cb) // faudrait-il en profiter pour envoyer la valeur de obs ?
     })
 }
