@@ -146,6 +146,8 @@ const match = (filter, pv) =>
     if (isObservable(v)) v = v.value
     return v === expectedValue
   })
+// teste si le patch peut avoir un impact sur le résultat du filtre
+const quickMatch = (filter, patch) => Object.keys(filter).some(k => k in patch)
 
 const patchMatchingResults = (store, epvPatch, epv) => {
   store.forEach((matchingResult, serializedFilter) => {
@@ -153,6 +155,7 @@ const patchMatchingResults = (store, epvPatch, epv) => {
     let entitiesChanged = false
     const filter = JSON.parse(serializedFilter)
     forEach(epvPatch, (ePatch, e) => {
+      if (!quickMatch(filter, ePatch)) return
       const pv = epv.get(e)
       if (match(filter, pv)) {
         // si e est déjà dans les résultats, rien à faire, sinon...
