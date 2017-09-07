@@ -98,7 +98,7 @@ module.exports = dirPath => {
     .then(
       // save current state
       monitor("save current state", () => {
-        console.log(data.size, "entities in current state")
+        let count = 0
 
         const rs = Readable()
         const ws = fs.createWriteStream(statePath)
@@ -108,13 +108,17 @@ module.exports = dirPath => {
           const { done, value } = entries.next()
           if (done) return rs.push(null)
           const [k1, entity] = value
-          entity.forEach((v2, k2) =>
+          entity.forEach((v2, k2) => {
             rs.push(JSON.stringify([k1, k2, v2]) + "\n")
-          )
+            count++
+          })
         }
 
         return new Promise((resolve, reject) => {
-          ws.once("finish", resolve)
+          ws.once("finish", () => {
+            console.log(count, "entries in current state")
+            resolve()
+          })
           ws.on("error", reject)
         })
       })
@@ -144,13 +148,10 @@ module.exports = dirPath => {
           let i = 0
           let j = 0
           // let count = 0
-          // let countInterventions = 0
-          // ws.once("error", reject)
 
           const reader = write => {
             if (i === entriesCount) {
               // console.log(count, "rows writen")
-              // console.log(countInterventions, "interventions writen")
               // console.timeEnd(timeLabel)
               write(null)
               resolve()
@@ -160,7 +161,6 @@ module.exports = dirPath => {
               const props = Object.keys(entityPatch)
               const k2 = props[j]
               const v2 = entityPatch[k2]
-              // if (v2 === "intervention") countInterventions++
               // count++
               j++
               const propsCount = props.length
