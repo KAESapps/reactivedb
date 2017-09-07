@@ -142,7 +142,7 @@ const entitiesRemove = pull
 const entitiesAdd = (entities, e) => entities.push(e)
 const match = (filter, pv) =>
   every(filter, (expectedValue, k) => {
-    const v = pv.get(k)
+    let v = pv.get(k)
     if (isObservable(v)) v = v.value
     return v === expectedValue
   })
