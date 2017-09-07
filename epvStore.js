@@ -4,6 +4,7 @@ const forEach = require("lodash/forEach")
 const includes = require("lodash/includes")
 const pull = require("lodash/pull")
 const every = require("lodash/every")
+const isObjectLike = require("lodash/isObjectLike")
 
 const getEntitiesFrom = (epv, prop, value) => {
   const entities = []
@@ -141,11 +142,33 @@ const entitiesContains = includes
 const entitiesRemove = pull
 const entitiesAdd = (entities, e) => entities.push(e)
 const match = (filter, pv) =>
-  every(filter, (expectedValue, k) => {
+  every(filter, (propFilter, k) => {
     let v = pv.get(k)
     if (isObservable(v)) v = v.value
-    return v === expectedValue
+
+    if (isObjectLike(propFilter)) {
+      return every(propFilter, (opValue, op) => {
+        if (op === "ne") {
+          return v !== opValue
+        }
+        if (op === "gt") {
+          return v > opValue
+        }
+        if (op === "gte") {
+          return v >= opValue
+        }
+        if (op === "lt") {
+          return v < opValue
+        }
+        if (op === "lte") {
+          return v <= opValue
+        }
+      })
+    } else {
+      return v === propFilter
+    }
   })
+
 // teste si le patch peut avoir un impact sur le résultat du filtre
 const quickMatch = (filter, patch) => Object.keys(filter).some(k => k in patch)
 
