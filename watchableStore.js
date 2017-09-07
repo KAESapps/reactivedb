@@ -14,17 +14,17 @@ module.exports = (store, send) => {
       })
     )
     console.log("watching query", query)
-    return Promise.resolve("done")
+    return "done"
   }
   const unwatch = watchId => {
     unwatchs.get(watchId)()
     console.log("stop watching query", watchId)
-    return Promise.resolve("done")
+    return "done"
   }
   const destroy = () => {
     unwatchs.forEach(unwatch => unwatch())
     console.log("watchable store destroyed")
-    return Promise.resolve("done")
+    return "done"
   }
 
   return create(store, {
