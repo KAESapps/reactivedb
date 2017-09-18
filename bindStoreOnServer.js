@@ -8,8 +8,10 @@ module.exports = (store, wss) =>
       ws.on("message", str => {
         try {
           const data = JSON.parse(str)
+          let callId
           try {
-            const { callId, method, arg } = data
+            callId = data.callId
+            const { method, arg } = data
             const res = watchableStore[method](arg)
             ws.send(JSON.stringify({ callId, res }))
           } catch (err) {

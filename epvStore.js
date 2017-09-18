@@ -148,6 +148,9 @@ const match = (filter, pv) =>
 
     if (isObjectLike(propFilter)) {
       return every(propFilter, (opValue, op) => {
+        if (op === "eq") {
+          return v === opValue
+        }
         if (op === "ne") {
           return v !== opValue
         }

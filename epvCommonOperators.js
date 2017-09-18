@@ -1,6 +1,7 @@
 const get = require("lodash/get")
 const sortBy = require("lodash/sortBy")
 const some = require("lodash/some")
+const every = require("lodash/every")
 const filter = require("lodash/filter")
 const find = require("lodash/find")
 const map = require("lodash/map")
@@ -47,6 +48,7 @@ module.exports = store => {
     reverse,
     not: v => !v,
     some,
+    every,
     isDefined: v => v != null,
     default: (value, defaultValue) => (value == null ? defaultValue : value),
     filterBy: (arr, exp) => {
@@ -70,10 +72,17 @@ module.exports = store => {
       some(ids, id => operators.query([{ constant: id }].concat(exp))),
     mapBy: (ids, exp) =>
       map(ids, id => operators.query([{ constant: id }].concat(exp))),
-    each: (v, exps) =>
-      (Array.isArray(exps) ? map : mapValues)(exps, exp =>
-        operators.query([{ constant: v }].concat(exp))
-      ),
+    each: (v, exps) => {
+      let mapExp
+      if (!exps) {
+        exps = v
+        mapExp = exp => operators.query(exp)
+      } else {
+        mapExp = exp => operators.query([{ constant: v }].concat(exp))
+      }
+
+      return (Array.isArray(exps) ? map : mapValues)(exps, mapExp)
+    },
     gte: ([v1, v2]) => {
       return v1 >= v2
     },
