@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "full reactive apps for Node and the browsers",
   "scripts": {
-    "now-start": "node perf/match.js"
+    "now-start": "node --max_old_space_size=4096 perf/match.js"
   },
   "repository": {
     "type": "git",
