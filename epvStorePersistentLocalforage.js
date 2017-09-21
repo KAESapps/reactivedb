@@ -39,7 +39,10 @@ module.exports = dbName => {
             })
           )
         }
-        return create(store, { patch: patchAndSave })
+        return create(store, {
+          patch: patchAndSave,
+          clearAllData: () => db.clear(),
+        })
       })
   )
 }
