@@ -24,6 +24,8 @@ const log = (fn, name) => (arg1, arg2) => {
 module.exports = store => {
   const operators = {
     entitiesMatching: filter => store.getEntitiesMatching(filter),
+    findEntityMatching: filter =>
+      operators.query([{ entitiesMatching: filter }, "first"]), // à remplacer par un appel à entitiesByValueOfProps
     entitiesWithValue: log(
       (prop, value) => store.getFromPve(prop, value),
       "entitiesWithValue"
@@ -36,6 +38,7 @@ module.exports = store => {
     entityWithProp: (value, prop) => last(store.getFromPve(prop, value)),
     valueOfProp: (id, prop) => store.getFromEpv(id, prop),
     entitiesByValueOf: prop => store.getFromP_ve(prop),
+    //TODO: créer un index "entitesByValueOfProps" qui permet d'indexer avec plusieurs props au lieu d'une seule comme dans "entitesByValueOf"
     entitiesAndValueOfProp: prop => store.getFromP_ev(prop),
     getFromGroupBy: (groupBy, value) => get(groupBy, value, []),
     constant: (v1, v2) => (v2 != null ? v2 : v1), // dans le cas où il y a une source, constant est appelé avec 2 args mais c'est le 2ème qui compte
