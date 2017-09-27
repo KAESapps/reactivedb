@@ -230,6 +230,18 @@ module.exports = epv => {
     }
     return pValue.get()
   }
+  // retourne une liste non réactive des props d'une entité (pour le besoin de générer un patch pour la supprimer)
+  const createPatchToRemoveAllPropsOf = e => {
+    const ret = {}
+    let eMap = epv.get(e)
+    if (!eMap) return ret
+    eMap.forEach((v, k) => {
+      if (isObservable(v)) v = v.value
+      if (v != null) ret[k] = null
+    })
+    return ret
+  }
+
   // crée un observable de e de façon lazy ainsi que la structure intermédiaire si besoin
   const pve = new Map()
   const getFromPve = (p, v) => {
@@ -295,6 +307,7 @@ module.exports = epv => {
   }
 
   return {
+    createPatchToRemoveAllPropsOf,
     getFromEpv,
     getFromPve,
     getFromP_ve,

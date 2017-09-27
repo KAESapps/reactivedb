@@ -24,6 +24,11 @@ const log = (fn, name) => (arg1, arg2) => {
 
 module.exports = store => {
   const operators = {
+    patch: p => store.patch(p),
+    removeAllPropsOf: id => {
+      const patch = store.createPatchToRemoveAllPropsOf(id)
+      store.patch({ [id]: patch })
+    },
     entitiesMatching: filter => store.getEntitiesMatching(filter),
     findEntityMatching: filter =>
       operators.query([{ entitiesMatching: filter }, "first"]), // à remplacer par un appel à entitiesByValueOfProps
