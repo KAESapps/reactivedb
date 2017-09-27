@@ -3,6 +3,7 @@ const sortBy = require("lodash/sortBy")
 const some = require("lodash/some")
 const every = require("lodash/every")
 const filter = require("lodash/filter")
+const pickBy = require("lodash/pickBy")
 const find = require("lodash/find")
 const map = require("lodash/map")
 const mapValues = require("lodash/mapValues")
@@ -48,6 +49,7 @@ module.exports = store => {
     sum,
     take,
     count: arr => arr.length,
+    ObjectKeys: o => Object.keys(o),
     reverse,
     not: v => !v,
     some,
@@ -56,6 +58,11 @@ module.exports = store => {
     default: (value, defaultValue) => (value == null ? defaultValue : value),
     filterBy: (arr, exp) => {
       return filter(arr, v => {
+        return operators.query([{ constant: v }].concat(exp))
+      })
+    },
+    filterObjectBy: (obj, exp) => {
+      return pickBy(obj, v => {
         return operators.query([{ constant: v }].concat(exp))
       })
     },
@@ -75,6 +82,8 @@ module.exports = store => {
       some(ids, id => operators.query([{ constant: id }].concat(exp))),
     mapBy: (ids, exp) =>
       map(ids, id => operators.query([{ constant: id }].concat(exp))),
+    mapObjectBy: (obj, exp) =>
+      mapValues(obj, id => operators.query([{ constant: id }].concat(exp))),
     each: (v, exps) => {
       let mapExp
       if (!exps) {
@@ -86,8 +95,21 @@ module.exports = store => {
 
       return (Array.isArray(exps) ? map : mapValues)(exps, mapExp)
     },
-    gte: ([v1, v2]) => {
+    gte: (arg1, arg2) => {
+      const [v1, v2] = Array.isArray(arg1) ? arg1 : [arg1, arg2]
       return v1 >= v2
+    },
+    gt: (arg1, arg2) => {
+      const [v1, v2] = Array.isArray(arg1) ? arg1 : [arg1, arg2]
+      return v1 > v2
+    },
+    lte: (arg1, arg2) => {
+      const [v1, v2] = Array.isArray(arg1) ? arg1 : [arg1, arg2]
+      return v1 <= v2
+    },
+    lt: (arg1, arg2) => {
+      const [v1, v2] = Array.isArray(arg1) ? arg1 : [arg1, arg2]
+      return v1 < v2
     },
     equal: (arg1, arg2) => {
       const [v1, v2] = Array.isArray(arg1) ? arg1 : [arg1, arg2]
