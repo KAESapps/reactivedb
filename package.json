@@ -23,5 +23,9 @@
     "lodash": "4.17.4",
     "sanitize-filename": "1.6.1",
     "shortid": "2.2.8"
+  },
+  "prettier": {
+    "trailingComma": "es5",
+    "semi": false
   }
 }
