@@ -2,6 +2,7 @@ const get = require("lodash/get")
 const sortBy = require("lodash/sortBy")
 const some = require("lodash/some")
 const every = require("lodash/every")
+const uniq = require("lodash/uniq")
 const filter = require("lodash/filter")
 const pickBy = require("lodash/pickBy")
 const find = require("lodash/find")
@@ -59,6 +60,7 @@ module.exports = store => {
     not: v => !v,
     some,
     every,
+    unique: uniq,
     isDefined: v => v != null,
     default: (value, defaultValue) => (value == null ? defaultValue : value),
     filterBy: (arr, exp) => {
