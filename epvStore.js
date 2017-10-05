@@ -313,7 +313,7 @@ module.exports = epv => {
     getFromP_ve,
     getFromP_ev,
     getEntitiesMatching,
-    patch: patch =>
+    patch: patch => {
       transaction(() => {
         // const timeLabel = "patchPve"
         // console.log(timeLabel)
@@ -324,6 +324,8 @@ module.exports = epv => {
         patchGroupBy(p_ve, pvePatch)
         patchMatchingResults(matchingResults, patch, epv) //le patch doit déjà être appliqué sur epv avant de lancer ce traitement
         // console.timeEnd(timeLabel)
-      }),
+      })
+      return patch
+    },
   }
 }
