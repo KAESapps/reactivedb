@@ -6,7 +6,7 @@ module.exports = ws => {
   const queriesCache = new Map()
   const pendingUnwatch = new Map()
 
-  const { watch, unwatch, patch, query: queryOnce } = clientRaw(ws)
+  const { watch, unwatch, patch, query: queryOnce, onClose } = clientRaw(ws)
 
   const query = q => {
     const key = JSON.stringify(q)
@@ -45,5 +45,5 @@ module.exports = ws => {
     return obs.get()
   }
 
-  return { patch, query, queryOnce }
+  return { patch, query, queryOnce, onClose }
 }
