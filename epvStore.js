@@ -143,7 +143,7 @@ const entitiesRemove = pull
 const entitiesAdd = (entities, e) => entities.push(e)
 const match = (filter, pv) =>
   every(filter, (propFilter, k) => {
-    let v = pv.get(k)
+    let v = pv && pv.get(k) // pv peut être undefined dans le cas où le patch a supprimé toutes mes props de e
     if (isObservable(v)) v = v.value
 
     if (isObjectLike(propFilter)) {

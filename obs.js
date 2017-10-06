@@ -194,3 +194,18 @@ exports.observe = function(obs, cb) {
       setTimeout(cb) // faudrait-il en profiter pour envoyer la valeur de obs ?
     })
 }
+
+// persiste la valeur dans le local storage
+// initValue n'est utilisée que si l'observbale n'a jamais été persisté
+exports.persistedObservable = function(name, initValue) {
+  const json = window.localStorage.getItem(name)
+  const value = json ? JSON.parse(json) : initValue
+  const obs = new exports.Obs(value, null, null, name)
+  const setAndPersist = newValue => {
+    window.localStorage.setItem(name, JSON.stringify(newValue))
+    obs.set(newValue)
+  }
+  return function(arg) {
+    return arguments.length ? setAndPersist(arg) : obs.get()
+  }
+}
