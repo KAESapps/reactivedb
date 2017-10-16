@@ -59,6 +59,7 @@ module.exports = store => {
     some,
     every,
     unique: uniq,
+    join: (strings, sep) => strings.join(sep),
     isDefined: v => v != null,
     default: (value, defaultValue) => (value == null ? defaultValue : value),
     filterBy: (arr, exp) => {
@@ -141,6 +142,8 @@ module.exports = store => {
       n && n.toLocaleString ? n.toLocaleString("fr", options) : "?",
     formatDate: (n, options) =>
       n ? new Date(n).toLocaleDateString("fr", options) : "?",
+    formatTime: (n, options) =>
+      n ? new Date(n).toLocaleTimeString("fr", options) : "?",
   }
   return operators
 }
