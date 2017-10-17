@@ -59,6 +59,7 @@ module.exports = store => {
     some,
     every,
     unique: uniq,
+    concat: (v1, v2) => (Array.isArray(v1) ? v1.concat(v2) : v1 + v2),
     join: (strings, sep) => strings.join(sep),
     isDefined: v => v != null,
     default: (value, defaultValue) => (value == null ? defaultValue : value),
@@ -133,13 +134,13 @@ module.exports = store => {
         )
       ),
     formatInteger: n =>
-      n && n.toLocaleString
+      get(n, "toLocaleString")
         ? n.toLocaleString("fr", {
             maximumFractionDigits: 0,
           })
         : "?",
     formatNumber: (n, options) =>
-      n && n.toLocaleString ? n.toLocaleString("fr", options) : "?",
+      get(n, "toLocaleString") ? n.toLocaleString("fr", options) : "?",
     formatDate: (n, options) =>
       n ? new Date(n).toLocaleDateString("fr", options) : "?",
     formatTime: (n, options) =>
