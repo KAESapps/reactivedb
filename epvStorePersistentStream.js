@@ -20,6 +20,7 @@ const monitor = (timeLabel, task) => () => {
 module.exports = dirPath => {
   // auto load
   const data = new Map()
+  let noDeltaEntries = false
   const statePath = path.join(dirPath, "current", "state")
   const deltaPath = path.join(dirPath, "current", "delta")
   return fs
@@ -74,6 +75,7 @@ module.exports = dirPath => {
               })
               ls.on("end", () => {
                 console.log(rowsCount, "rows in delta file")
+                if (!rowsCount) noDeltaEntries = true
                 resolve()
               })
               ls.on("error", reject)
@@ -82,9 +84,10 @@ module.exports = dirPath => {
       )
     )
     .then(
-      // archive current files
-      monitor("archive current files", () =>
-        fs.move(
+      // archive current files (only if there was delta entries)
+      monitor("archive current files", () => {
+        if (noDeltaEntries) return Promise.resolve()
+        return fs.move(
           path.join(dirPath, "current"),
           path.join(
             dirPath,
@@ -92,12 +95,13 @@ module.exports = dirPath => {
             sanitizeFilename(new Date().toISOString(), { replacement: "-" })
           )
         )
-      )
+      })
     )
     .then(() => fs.ensureFile(statePath))
     .then(
-      // save current state
+      // save current state (only if there was delta entries)
       monitor("save current state", () => {
+        if (noDeltaEntries) return Promise.resolve()
         let count = 0
 
         const rs = Readable()
