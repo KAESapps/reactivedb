@@ -4,6 +4,7 @@ const some = require("lodash/some")
 const every = require("lodash/every")
 const uniq = require("lodash/uniq")
 const filter = require("lodash/filter")
+const groupBy = require("lodash/groupBy")
 const pickBy = require("lodash/pickBy")
 const find = require("lodash/find")
 const map = require("lodash/map")
@@ -63,6 +64,11 @@ module.exports = store => {
     join: (strings, sep) => strings.join(sep),
     isDefined: v => v != null,
     default: (value, defaultValue) => (value == null ? defaultValue : value),
+    groupBy: (arr, exp) => {
+      return groupBy(arr, v => {
+        return operators.query([{ constant: v }].concat(exp))
+      })
+    },
     filterBy: (arr, exp) => {
       return filter(arr, v => {
         return operators.query([{ constant: v }].concat(exp))
