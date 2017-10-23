@@ -12,24 +12,34 @@ const mapValues = require("lodash/mapValues")
 const reverse = require("lodash/reverse")
 const difference = require("lodash/difference")
 const last = require("lodash/last")
-const first = arr => arr && arr[0]
+const first = arr => (arr ? arr[0] : null)
 const flatten = require("lodash/flatten")
 const take = require("lodash/take")
 const sum = require("lodash/sum")
-const log = (fn, name) => (arg1, arg2) => {
-  const timeName = `computing ${name}: ${arg1}, ${arg2}`
-  console.time(timeName)
-  const res = fn(arg1, arg2)
-  console.timeEnd(timeName)
-  return res
-}
+const log = fn => fn
+// const log = (fn, name) => (arg1, arg2) => {
+//   const timeName = `computing ${name}: ${arg1}, ${arg2}`
+//   console.time(timeName)
+//   const res = fn(arg1, arg2)
+//   console.timeEnd(timeName)
+//   return res
+// }
 
 module.exports = store => {
   const operators = {
     patchToRemoveAllPropsOf: id => ({
       [id]: store.createPatchToRemoveAllPropsOf(id),
     }),
-    entitiesMatching: filter => store.getEntitiesMatching(filter),
+    entitiesMatching: filter => {
+      const filterKeys = Object.keys(filter)
+      if (filterKeys.length === 1) {
+        // optimise le cas avec une seule prop par égalité
+        const prop = filterKeys[0]
+        const value = filter[prop]
+        if (typeof value !== "object") return store.getFromPve(prop, value)
+      }
+      return store.getEntitiesMatching(filter)
+    },
     findEntityMatching: filter =>
       operators.query([{ entitiesMatching: filter }, "first"]), // à remplacer par un appel à entitiesByValueOfProps
     entitiesWithValue: log(
