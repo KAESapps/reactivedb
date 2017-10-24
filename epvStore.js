@@ -4,6 +4,7 @@ const forEach = require("lodash/forEach")
 const includes = require("lodash/includes")
 const pull = require("lodash/pull")
 const every = require("lodash/every")
+const isUndefined = require("lodash/isUndefined")
 const isObjectLike = require("lodash/isObjectLike")
 
 const getEntitiesFrom = (epv, prop, value) => {
@@ -145,6 +146,10 @@ const match = (filter, pv) =>
   every(filter, (propFilter, k) => {
     let v = pv && pv.get(k) // pv peut être undefined dans le cas où le patch a supprimé toutes mes props de e
     if (isObservable(v)) v = v.value
+    // treating undefined values as null
+    if (isUndefined(v)) {
+      v = null
+    }
 
     if (isObjectLike(propFilter)) {
       return every(propFilter, (opValue, op) => {
