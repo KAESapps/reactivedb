@@ -60,9 +60,15 @@ module.exports = dbPromise =>
             }
           })
         })
-        return db.bulkWrite(batch).then(() => {
-          console.timeEnd(timeLabel)
-        })
+        return db.bulkWrite(batch).then(
+          () => {
+            console.timeEnd(timeLabel)
+          },
+          err => {
+            console.error(err)
+            process.exit(1) // est-ce trop violent ?
+          }
+        )
       }
       return create(store, { patch: patchAndSave })
     })
