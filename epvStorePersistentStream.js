@@ -7,6 +7,7 @@ const { set, unset } = require("./kkvHelpers")
 const LDJSONStream = require("ld-jsonstream")
 const streamOfStreams = require("./streamOfStreams")
 const Readable = require("stream").Readable
+const gracefulExit = require("./gracefulExit")
 
 const monitor = (timeLabel, task) => () => {
   console.log("start", timeLabel)
@@ -130,19 +131,27 @@ module.exports = dirPath => {
     .then(() => {
       const store = epvStore(data)
       // auto save
+      console.log("enabling auto-save")
+
       // on ouvre une stream en écriture sur le fichier delta qui doit être vide
       const ws = fs.createWriteStream(path.join(dirPath, "current", "delta"))
       ws.on("error", err =>
         console.error("Erreur de sauvegarde des données", err)
       )
+
       const rss = streamOfStreams()
       rss.pipe(ws)
 
+      gracefulExit(() => {
+        console.log("Finish writing delta file before exit...")
+        const promise = new Promise(resolve => ws.on("finish", resolve))
+        rss.end()
+        return promise
+      })
+
       const patchAndSave = patch => {
-        // call memory store patch
-        store.patch(patch)
-        // and then persist it
-        return new Promise((resolve, reject) => {
+        // start persisting the patch
+        const writePromise = new Promise((resolve, reject) => {
           // var timeLabel = "persisting patch"
           // console.time(timeLabel)
           const keys = Object.keys(patch)
@@ -178,6 +187,11 @@ module.exports = dirPath => {
           }
           rss.pushReader(reader)
         })
+
+        // call memory store patch
+        store.patch(patch)
+
+        return writePromise
       }
       return create(store, { patch: patchAndSave })
     })

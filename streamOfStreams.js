@@ -4,13 +4,19 @@ const Readable = require("stream").Readable
 
 module.exports = () => {
   const readers = []
-  let waiting, write
+  let waiting, write, end
   const rss = Readable()
   const tryToRead = () => {
     const reader = readers[0]
     if (reader) {
       reader(write)
     } else {
+      if (end) {
+        // end of stream
+        rss.push(null)
+      }
+
+      // wait for next reader
       waiting = reader => {
         waiting = null
         reader(write)
@@ -26,9 +32,18 @@ module.exports = () => {
     }
   }
   rss._read = tryToRead
+
   rss.pushReader = reader => {
     readers.push(reader)
     if (waiting) waiting(reader)
   }
+
+  rss.end = () => {
+    if (waiting) rss.push(null)
+    else {
+      end = true
+    }
+  }
+
   return rss
 }
