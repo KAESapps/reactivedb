@@ -1,5 +1,5 @@
 const clientRaw = require("./client-raw")
-const { Obs } = require("./obs")
+const { Obs } = require("kobs")
 const unwatchDelay = 30 * 1000 // server unwatch is called if UI is not observing during 30 seconds
 
 module.exports = ws => {

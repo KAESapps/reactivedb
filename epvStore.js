@@ -1,4 +1,4 @@
-const { transaction, Obs } = require("./obs") // on utilise Obs directement plutôt que observable car ça évite des closures inutiles, ça permet de bypasser le getter quand on n'a pas besoin de s'abonner à l'observable et de toute façon les observables ne sont pas exposés au public
+const { transaction, Obs } = require("kobs") // on utilise Obs directement plutôt que observable car ça évite des closures inutiles, ça permet de bypasser le getter quand on n'a pas besoin de s'abonner à l'observable et de toute façon les observables ne sont pas exposés au public
 const isObservable = o => o && o.get
 const forEach = require("lodash/forEach")
 const includes = require("lodash/includes")

@@ -1,4 +1,4 @@
-const { observable } = require("./obs")
+const { observable } = require("kobs")
 
 // const has = (map, key1, key2) => {
 //   if (!map.has(key1)) return false

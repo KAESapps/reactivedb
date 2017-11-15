@@ -1,4 +1,4 @@
-const { observable } = require("./obs")
+const { observable } = require("kobs")
 
 module.exports = (fn, name) => {
   const cache = new Map()

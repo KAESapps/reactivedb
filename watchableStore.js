@@ -1,4 +1,4 @@
-const autorun = require("./obs").autorun
+const autorun = require("kobs").autorun
 const create = require("lodash/create")
 
 module.exports = (store, send) => {

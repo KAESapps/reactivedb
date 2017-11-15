@@ -1,6 +1,6 @@
 // const shortid = require("shortid")
 const epvStore = require("../epvStore")
-const { autorun } = require("../obs")
+const { autorun } = require("kobs")
 const monitor = (cb, label) => {
   console.log("start", label)
   console.time(label)
