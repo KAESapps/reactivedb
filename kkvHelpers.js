@@ -61,6 +61,7 @@ exports.patch = (store, patch) => {
   })
 }
 
+// source est un map de maps et le résultat est un kkv plain object
 const cloneObject = (exports.clone = source => {
   const clone = {}
   forEach(source, (kv, k1) => {

@@ -312,6 +312,7 @@ module.exports = epv => {
   }
 
   return {
+    data: epv,
     createPatchToRemoveAllPropsOf,
     getFromEpv,
     getFromPve,
