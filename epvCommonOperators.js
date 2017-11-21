@@ -74,6 +74,7 @@ module.exports = store => {
     join: (strings, sep) => strings.join(sep),
     isDefined: v => v != null,
     default: (value, defaultValue) => (value == null ? defaultValue : value),
+    defaultExp: (value, exp) => (value != null ? value : operators.query(exp)),
     groupBy: (arr, exp) => {
       return groupBy(arr, v => {
         return operators.query([{ constant: v }].concat(exp))
