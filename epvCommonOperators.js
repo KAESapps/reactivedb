@@ -1,4 +1,5 @@
 const get = require("lodash/get")
+const set = require("lodash/set")
 const sortBy = require("lodash/sortBy")
 const some = require("lodash/some")
 const every = require("lodash/every")
@@ -30,6 +31,7 @@ module.exports = store => {
     patchToRemoveAllPropsOf: id => ({
       [id]: store.createPatchToRemoveAllPropsOf(id),
     }),
+    entityRemovePatch: entityId => store.createPatchToRemoveAllPropsOf(entityId),
     entitiesMatching: filter => {
       const filterKeys = Object.keys(filter)
       if (filterKeys.length === 1) {
@@ -106,6 +108,8 @@ module.exports = store => {
       some(ids, id => operators.query([{ constant: id }].concat(exp))),
     mapBy: (ids, exp) =>
       map(ids, id => operators.query([{ constant: id }].concat(exp))),
+    // crée un objet avec les valeurs du array en key and value
+    arrayToObject: arr => arr.reduce((acc, id) => set(acc, id, id), {}),
     mapObjectBy: (obj, exp) =>
       mapValues(obj, id => operators.query([{ constant: id }].concat(exp))),
     each: (v, exps) => {
