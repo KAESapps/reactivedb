@@ -24,6 +24,7 @@ module.exports = dirPath => {
   let noDeltaEntries = false
   const statePath = path.join(dirPath, "current", "state")
   const deltaPath = path.join(dirPath, "current", "delta")
+  const patchesPath = path.join(dirPath, "current", "patches")
   return fs
     .ensureDir(path.join(dirPath, "current"))
     .then(
@@ -128,6 +129,7 @@ module.exports = dirPath => {
         })
       })
     )
+    .then(() => fs.ensureDir(patchesPath))
     .then(() => {
       const store = epvStore(data)
       // auto save
@@ -150,6 +152,17 @@ module.exports = dirPath => {
       })
 
       const patchAndSave = patch => {
+        // save a backup of the patch
+        fs.writeFile(
+          path.join(
+            patchesPath,
+            new Date()
+              .toISOString()
+              .replace(":", "-")
+              .replace(":", "-")
+          ) + ".json",
+          JSON.stringify(patch)
+        )
         // start persisting the patch
         const writePromise = new Promise((resolve, reject) => {
           // var timeLabel = "persisting patch"
