@@ -31,7 +31,8 @@ module.exports = store => {
     patchToRemoveAllPropsOf: id => ({
       [id]: store.createPatchToRemoveAllPropsOf(id),
     }),
-    entityRemovePatch: entityId => store.createPatchToRemoveAllPropsOf(entityId),
+    entityRemovePatch: entityId =>
+      store.createPatchToRemoveAllPropsOf(entityId),
     entitiesMatching: filter => {
       const filterKeys = Object.keys(filter)
       if (filterKeys.length === 1) {
@@ -73,6 +74,10 @@ module.exports = store => {
     every,
     unique: uniq,
     concat: (v1, v2) => (Array.isArray(v1) ? v1.concat(v2) : v1 + v2),
+    concatExp: (v1, exp) =>
+      Array.isArray(v1)
+        ? v1.concat(operators.query(exp))
+        : v1 + operators.query(exp),
     join: (strings, sep) => strings.join(sep),
     isDefined: v => v != null,
     default: (value, defaultValue) => (value == null ? defaultValue : value),
