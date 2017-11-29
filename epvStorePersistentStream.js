@@ -1,3 +1,6 @@
+const nodeFs = require("fs")
+const { promisify } = require("util")
+const fsMove = promisify(nodeFs.rename)
 const fs = require("fs-extra")
 const path = require("path")
 const sanitizeFilename = require("sanitize-filename")
@@ -89,7 +92,7 @@ module.exports = dirPath => {
       // archive current files (only if there was delta entries)
       monitor("archive current files", () => {
         if (noDeltaEntries) return Promise.resolve()
-        return fs.move(
+        return fsMove(
           path.join(dirPath, "current"),
           path.join(
             dirPath,
