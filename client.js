@@ -27,10 +27,10 @@ module.exports = ws => {
             })
             queriesCache.delete(key)
             pendingUnwatch.delete(key)
-            console.log("unwatched query", q)
+            //console.log("unwatched query", q)
           }, unwatchDelay)
         )
-        console.log("query scheduled to be unwatched", q)
+        //console.log("query scheduled to be unwatched", q)
       }
       obs = new Obs(
         { loaded: false, value: undefined },
