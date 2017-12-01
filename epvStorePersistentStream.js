@@ -198,7 +198,14 @@ module.exports = dirPath => {
                 i++
               }
               // appel write après la mise à jour des compteurs car cela peut déclencher une nouvelle lecture en synchrone
-              write(JSON.stringify([k1, k2, v2]) + "\n")
+              if (k1 != null && k2 != null) {
+                write(JSON.stringify([k1, k2, v2]) + "\n")
+              } else {
+                console.error(
+                  "trying to write a malformed patch line",
+                  JSON.stringify([k1, k2, v2])
+                )
+              }
             }
           }
           rss.pushReader(reader)
