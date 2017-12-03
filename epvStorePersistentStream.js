@@ -179,7 +179,7 @@ module.exports = dirPath => {
           // let count = 0
 
           const reader = write => {
-            if (i === entriesCount) {
+            if (i >= entriesCount) {
               // console.log(count, "rows writen")
               // console.timeEnd(timeLabel)
               write(null)
@@ -188,23 +188,28 @@ module.exports = dirPath => {
               const k1 = keys[i]
               const entityPatch = patch[k1]
               const props = Object.keys(entityPatch)
-              const k2 = props[j]
-              const v2 = entityPatch[k2]
-              // count++
-              j++
               const propsCount = props.length
-              if (j === propsCount) {
+              if (propsCount === 0) {
+                console.warn("malformed patch for entity", k1, patch)
+              }
+              if (j >= propsCount) {
                 j = 0
                 i++
-              }
-              // appel write après la mise à jour des compteurs car cela peut déclencher une nouvelle lecture en synchrone
-              if (k1 != null && k2 != null) {
-                write(JSON.stringify([k1, k2, v2]) + "\n")
               } else {
-                console.error(
-                  "trying to write a malformed patch line",
-                  JSON.stringify([k1, k2, v2])
-                )
+                const k2 = props[j]
+                const v2 = entityPatch[k2]
+                // count++
+                j++
+                // appel write après la mise à jour des compteurs car cela peut déclencher une nouvelle lecture en synchrone
+                if (k1 != null && k2 != null) {
+                  // sécurité peut-être pas nécessaire...
+                  write(JSON.stringify([k1, k2, v2]) + "\n")
+                } else {
+                  console.error(
+                    "trying to write a malformed patch line",
+                    JSON.stringify([k1, k2, v2])
+                  )
+                }
               }
             }
           }
