@@ -88,6 +88,7 @@ module.exports = dirPath => {
         )
       )
     )
+    .then(() => fs.ensureDir(path.join(dirPath, "archives")))
     .then(
       // archive current files (only if there was delta entries)
       monitor("archive current files", () => {
