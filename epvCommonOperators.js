@@ -70,6 +70,7 @@ module.exports = store => {
     ObjectKeys: o => Object.keys(o),
     reverse,
     not: v => !v,
+    identity: v => v,
     some,
     every,
     unique: uniq,
