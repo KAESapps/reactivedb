@@ -16,6 +16,7 @@ const last = require("lodash/last")
 const first = arr => (arr ? arr[0] : null)
 const flatten = require("lodash/flatten")
 const take = require("lodash/take")
+const takeEnd = require("lodash/takeRight")
 const sum = require("lodash/sum")
 const log = fn => fn
 // const log = (fn, name) => (arg1, arg2) => {
@@ -66,6 +67,7 @@ module.exports = store => {
     flatten,
     sum,
     take,
+    takeEnd,
     count: arr => arr.length,
     ObjectKeys: o => Object.keys(o),
     reverse,
