@@ -11,22 +11,22 @@ module.exports = ws => {
   )
 
   const query = q => {
-    const key = JSON.stringify(q)
-    let obs = queriesCache.get(key)
-    const cancelPendingUnwatch = pendingUnwatch.get(key)
+    const watchId = JSON.stringify(q)
+    let obs = queriesCache.get(watchId)
+    const cancelPendingUnwatch = pendingUnwatch.get(watchId)
     if (cancelPendingUnwatch) {
       clearTimeout(cancelPendingUnwatch)
     }
     if (!obs) {
       const onUnobserved = () => {
         pendingUnwatch.set(
-          key,
+          watchId,
           setTimeout(() => {
-            unwatch(key).catch(err => {
+            unwatch({ watchId }).catch(err => {
               console.error("Error stoping to watch query", q, err)
             })
-            queriesCache.delete(key)
-            pendingUnwatch.delete(key)
+            queriesCache.delete(watchId)
+            pendingUnwatch.delete(watchId)
             //console.log("unwatched query", q)
           }, unwatchDelay)
         )
@@ -36,11 +36,13 @@ module.exports = ws => {
         { loaded: false, value: undefined },
         onUnobserved,
         null,
-        key
+        watchId
       )
-      queriesCache.set(key, obs)
+      queriesCache.set(watchId, obs)
       // start watching server
-      watch(key, value => obs.set({ loaded: true, value })).catch(err => {
+      watch({ watchId, query: q }, value =>
+        obs.set({ loaded: true, value })
+      ).catch(err => {
         console.error("Error starting to watch query", q, err)
       })
     }

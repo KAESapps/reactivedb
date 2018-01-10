@@ -9,6 +9,7 @@ module.exports = ws => {
     // console.log("message received", data)
     if (data.callId) {
       const resolver = resolvers.get(data.callId)
+      resolvers.delete(data.callId)
       if (!resolver) {
         return console.error("no handler for message", message)
       }
@@ -43,13 +44,13 @@ module.exports = ws => {
   const patch = p => call("patch", p)
   const query = p => call("query", p)
 
-  const watch = (query, listener) => {
-    listeners.set(query, listener)
-    return call("watch", query)
+  const watch = (arg, listener) => {
+    listeners.set(arg.watchId, listener)
+    return call("watch", arg)
   }
-  const unwatch = query => {
-    listeners.delete(query)
-    return call("unwatch", query)
+  const unwatch = arg => {
+    listeners.delete(arg.watchId)
+    return call("unwatch", arg)
   }
 
   const close = () => {

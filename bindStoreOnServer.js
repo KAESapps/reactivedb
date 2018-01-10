@@ -4,7 +4,8 @@ const watchable = require("./watchableStore")
 module.exports = (store, wss) =>
   new Promise((resolve, reject) => {
     wss.on("connection", ws => {
-      const watchableStore = watchable(store, ws.send.bind(ws))
+      const send = data => ws.send(JSON.stringify(data))
+      const watchableStore = watchable(store, send)
       ws.on("message", str => {
         let data
         try {
@@ -16,12 +17,11 @@ module.exports = (store, wss) =>
         let callId
         try {
           callId = data.callId
-          const { method, arg } = data
-          const res = watchableStore[method](arg)
-          ws.send(JSON.stringify({ callId, res }))
+          const res = watchableStore[data.method](data.arg)
+          send({ callId, res })
         } catch (err) {
           console.error("error responding to method call", err)
-          ws.send(JSON.stringify({ callId, err: err.message }))
+          send({ callId, err: err.message })
           throw err
         }
       })
