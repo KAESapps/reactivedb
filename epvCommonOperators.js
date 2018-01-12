@@ -4,6 +4,7 @@ const sortBy = require("lodash/sortBy")
 const some = require("lodash/some")
 const every = require("lodash/every")
 const uniq = require("lodash/uniq")
+const includes = require("lodash/includes")
 const filter = require("lodash/filter")
 const groupBy = require("lodash/groupBy")
 const pickBy = require("lodash/pickBy")
@@ -69,6 +70,7 @@ module.exports = store => {
     take,
     takeEnd,
     count: arr => arr.length,
+    contains: (arr, exp) => includes(arr, operators.query(exp)),
     ObjectKeys: o => Object.keys(o),
     reverse,
     not: v => !v,
