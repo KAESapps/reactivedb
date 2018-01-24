@@ -72,7 +72,7 @@ module.exports = store => {
     count: arr => arr.length,
     contains: (arr, exp) => includes(arr, operators.query(exp)),
     ObjectKeys: o => Object.keys(o),
-    reverse,
+    reverse: arr => reverse(arr.slice()),
     not: v => !v,
     identity: v => v,
     some,
