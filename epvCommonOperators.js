@@ -62,7 +62,9 @@ module.exports = store => {
     //TODO: créer un index "entitesByValueOfProps" qui permet d'indexer avec plusieurs props au lieu d'une seule comme dans "entitesByValueOf"
     entitiesAndValueOfProp: prop => store.getFromP_ev(prop),
     getFromGroupBy: (groupBy, value) => get(groupBy, value, []),
-    constant: (v1, v2) => (v2 != null ? v2 : v1), // dans le cas où il y a une source, constant est appelé avec 2 args mais c'est le 2ème qui compte
+    constant: function(v1, v2) {
+      return arguments.length === 2 ? v2 : v1
+    }, // dans le cas où il y a une source, constant est appelé avec 2 args mais c'est le 2ème qui compte
     first,
     last,
     flatten,
@@ -158,12 +160,17 @@ module.exports = store => {
     difference: ([s1, s2]) => {
       return difference(s1, s2)
     },
-    branch: (cond, cases) =>
-      operators.query(
-        (cond !== undefined ? [{ constant: cond }] : []).concat(
-          cond ? cases["truthy"] : cases["falsy"]
-        )
-      ),
+    branch: (value, args) => {
+      if (value === undefined) value = null
+      if (args.cond) {
+        cond = operators.query([{ constant: value }].concat(args.cond))
+      } else {
+        cond = value
+      }
+      const branch = cond ? args["truthy"] : args["falsy"]
+      if (!branch) return value
+      return operators.query([{ constant: value }].concat(branch))
+    },
     formatInteger: n =>
       get(n, "toLocaleString")
         ? n.toLocaleString("fr", {
