@@ -19,6 +19,7 @@ const flatten = require("lodash/flatten")
 const take = require("lodash/take")
 const takeEnd = require("lodash/takeRight")
 const sum = require("lodash/sum")
+const round = require("lodash/round")
 const log = fn => fn
 // const log = (fn, name) => (arg1, arg2) => {
 //   const timeName = `computing ${name}: ${arg1}, ${arg2}`
@@ -80,6 +81,7 @@ module.exports = store => {
     some,
     every,
     unique: uniq,
+    round,
     concat: (v1, v2) => (Array.isArray(v1) ? v1.concat(v2) : v1 + v2),
     concatExp: (v1, exp) =>
       Array.isArray(v1)
