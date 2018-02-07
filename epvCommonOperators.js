@@ -20,6 +20,7 @@ const take = require("lodash/take")
 const takeEnd = require("lodash/takeRight")
 const sum = require("lodash/sum")
 const round = require("lodash/round")
+const zipObject = require("lodash/zipObject")
 const log = fn => fn
 // const log = (fn, name) => (arg1, arg2) => {
 //   const timeName = `computing ${name}: ${arg1}, ${arg2}`
@@ -82,6 +83,7 @@ module.exports = store => {
     every,
     unique: uniq,
     round,
+    zipObject: args => zipObject(args[0], args[1]),
     concat: (v1, v2) => (Array.isArray(v1) ? v1.concat(v2) : v1 + v2),
     concatExp: (v1, exp) =>
       Array.isArray(v1)
