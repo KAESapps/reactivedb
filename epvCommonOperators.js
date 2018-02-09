@@ -189,6 +189,8 @@ module.exports = store => {
       n ? new Date(n).toLocaleDateString("fr", options) : "?",
     formatTime: (n, options) =>
       n ? new Date(n).toLocaleTimeString("fr", options) : "?",
+    formatDateTime: (n, options) =>
+      n ? new Date(n).toLocaleString("fr", options) : "?",
     formatBoolean: (n, options) => (n ? "OUI" : "NON"),
   }
   return operators
