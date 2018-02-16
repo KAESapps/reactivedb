@@ -72,7 +72,7 @@ module.exports = store => {
     last,
     flatten,
     sum,
-    take,
+    take: (v, n) => (typeof v === "string" ? v.slice(0, n) : take(v, n)),
     takeEnd,
     count: arr => arr.length,
     contains: (arr, exp) => includes(arr, operators.query(exp)),
