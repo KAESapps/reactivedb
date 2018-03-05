@@ -11,7 +11,7 @@ module.exports = (store, wss) =>
         try {
           data = JSON.parse(str)
         } catch (err) {
-          console.error("error handling message", err)
+          console.error("error parsing message", str, err)
         }
 
         let callId
