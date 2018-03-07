@@ -54,6 +54,7 @@ module.exports = clientRaw => {
     return obs.get()
   }
   const query = q => watch({ method: "query", arg: q })
+  const clearLocalData = () => call("clearLocalData")
 
-  return { patch, query, queryOnce, onClose, call, watch }
+  return { patch, query, queryOnce, onClose, call, watch, clearLocalData }
 }
