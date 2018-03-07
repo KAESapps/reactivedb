@@ -4,20 +4,20 @@ const create = require("lodash/create")
 module.exports = (store, send) => {
   const unwatchs = new Map()
 
-  const watch = ({ watchId, query }) => {
+  const watch = ({ watchId, method = "query", arg }) => {
     unwatchs.set(
       watchId,
       autorun(() => {
-        const value = store.query(query)
+        const value = store[method](arg)
         send({ watchId, value })
       })
     )
-    console.log("watching query", query)
+    console.log("watching", method, arg)
     return "done"
   }
   const unwatch = ({ watchId }) => {
     unwatchs.get(watchId)()
-    console.log("stop watching query", watchId)
+    console.log("stop watching", watchId)
     return "done"
   }
   const destroy = () => {
