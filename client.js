@@ -2,7 +2,7 @@
 const { Obs } = require("kobs")
 const unwatchDelay = 30 * 1000 // server unwatch is called if UI is not observing during 30 seconds
 
-module.exports = clientRaw => {
+module.exports = (clientRaw, authenticatedUser) => {
   const queriesCache = new Map()
   const pendingUnwatch = new Map()
 
@@ -12,6 +12,7 @@ module.exports = clientRaw => {
     patch,
     query: queryOnce,
     onClose,
+    close,
     call,
   } = clientRaw
 
@@ -28,7 +29,7 @@ module.exports = clientRaw => {
           watchId,
           setTimeout(() => {
             unwatch({ watchId }).catch(err => {
-              console.error("Error stoping to watch query", q, err)
+              console.error("Error stoping to watch query", err, watchId)
             })
             queriesCache.delete(watchId)
             pendingUnwatch.delete(watchId)
@@ -56,5 +57,15 @@ module.exports = clientRaw => {
   const query = q => watch({ method: "query", arg: q })
   const clearLocalData = () => call("clearLocalData")
 
-  return { patch, query, queryOnce, onClose, call, watch, clearLocalData }
+  return {
+    authenticatedUser,
+    patch,
+    query,
+    queryOnce,
+    onClose,
+    call,
+    watch,
+    clearLocalData,
+    close,
+  }
 }
