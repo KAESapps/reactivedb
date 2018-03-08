@@ -16,8 +16,8 @@ module.exports = (clientRaw, authenticatedUser) => {
     call,
   } = clientRaw
 
-  const watch = arg => {
-    const watchId = JSON.stringify(arg)
+  const watch = (method, arg) => {
+    const watchId = JSON.stringify({ method, arg })
     let obs = queriesCache.get(watchId)
     const cancelPendingUnwatch = pendingUnwatch.get(watchId)
     if (cancelPendingUnwatch) {
@@ -29,7 +29,7 @@ module.exports = (clientRaw, authenticatedUser) => {
           watchId,
           setTimeout(() => {
             unwatch({ watchId }).catch(err => {
-              console.error("Error stoping to watch query", err, watchId)
+              console.error("Error stopping to watch", method, arg, err)
             })
             queriesCache.delete(watchId)
             pendingUnwatch.delete(watchId)
@@ -46,7 +46,7 @@ module.exports = (clientRaw, authenticatedUser) => {
       )
       queriesCache.set(watchId, obs)
       // start watching server
-      rawWatch({ watchId, method: arg.method, arg: arg.arg }, value =>
+      rawWatch({ watchId, method, arg }, value =>
         obs.set({ loaded: true, value })
       ).catch(err => {
         console.error("Error starting to watch", arg, err)
@@ -54,7 +54,7 @@ module.exports = (clientRaw, authenticatedUser) => {
     }
     return obs.get()
   }
-  const query = q => watch({ method: "query", arg: q })
+  const query = q => watch("query", q)
   const clearLocalData = () => call("clearLocalData")
 
   return {

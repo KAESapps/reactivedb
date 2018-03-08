@@ -8,7 +8,12 @@ module.exports = (store, send) => {
     unwatchs.set(
       watchId,
       autorun(() => {
-        const value = store[method](arg)
+        let value
+        if (arg === undefined) {
+          value = store[method]()
+        } else {
+          value = store[method](arg)
+        }
         send({ watchId, value })
       })
     )
