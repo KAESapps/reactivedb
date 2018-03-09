@@ -17,12 +17,12 @@ module.exports = (store, send) => {
         send({ watchId, value })
       })
     )
-    console.log("watching", method, arg)
+    // console.log("watching", method, arg)
     return "done"
   }
   const unwatch = ({ watchId }) => {
     unwatchs.get(watchId)()
-    console.log("stop watching", watchId)
+    // console.log("stop watching", watchId)
     return "done"
   }
   const destroy = () => {
