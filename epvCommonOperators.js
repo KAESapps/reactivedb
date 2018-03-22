@@ -65,7 +65,7 @@ module.exports = store => {
     //TODO: créer un index "entitesByValueOfProps" qui permet d'indexer avec plusieurs props au lieu d'une seule comme dans "entitesByValueOf"
     entitiesAndValueOfProp: prop => store.getFromP_ev(prop),
     getFromGroupBy: (groupBy, value) => get(groupBy, value, []),
-    constant: function(v1, v2) {
+    constant: function (v1, v2) {
       return arguments.length === 2 ? v2 : v1
     }, // dans le cas où il y a une source, constant est appelé avec 2 args mais c'est le 2ème qui compte
     first,
@@ -168,12 +168,12 @@ module.exports = store => {
       return difference(s1, s2)
     },
     branch: (value, args) => {
-      if (value === undefined) value = null
-      if (args.cond) {
-        cond = operators.query([{ constant: value }].concat(args.cond))
-      } else {
-        cond = value
+      if (value === undefined) {
+        value = null
       }
+      const cond = args.cond
+        ? operators.query([{ constant: value }].concat(args.cond))
+        : value
       const branch = cond ? args["truthy"] : args["falsy"]
       if (!branch) return value
       return operators.query([{ constant: value }].concat(branch))
@@ -181,18 +181,18 @@ module.exports = store => {
     formatInteger: n =>
       get(n, "toLocaleString")
         ? n.toLocaleString("fr", {
-            maximumFractionDigits: 0,
-          })
+          maximumFractionDigits: 0,
+        })
         : "?",
-    formatNumber: (n, options) =>
+    rmatNumber: (n, options) =>
       get(n, "toLocaleString") ? n.toLocaleString("fr", options) : "?",
     formatDate: (n, options) =>
       n ? new Date(n).toLocaleDateString("fr", options) : "?",
-    formatTime: (n, options) =>
+    rmatTime: (n, options) =>
       n ? new Date(n).toLocaleTimeString("fr", options) : "?",
     formatDateTime: (n, options) =>
       n ? new Date(n).toLocaleString("fr", options) : "?",
-    formatBoolean: (n, options) => (n ? "OUI" : "NON"),
+    formatBoolean: n => n ? "OUI" : "NON",
   }
   return operators
 }
