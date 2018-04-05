@@ -15,7 +15,7 @@ module.exports = operators => {
     if (typeof operation === "object") arg = operation[operator]
 
     if (!operators[operator]) {
-      console.error(`opérateur inconnu "${operation}" in query`, query)
+      console.error(`opérateur inconnu "${operator}" in query`, operation)
       throw new Error("opérateur inconnu")
     }
 

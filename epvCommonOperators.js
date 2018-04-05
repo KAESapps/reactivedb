@@ -10,6 +10,7 @@ const groupBy = require("lodash/groupBy")
 const pickBy = require("lodash/pickBy")
 const find = require("lodash/find")
 const map = require("lodash/map")
+const concat = require("lodash/concat")
 const mapValues = require("lodash/mapValues")
 const reverse = require("lodash/reverse")
 const difference = require("lodash/difference")
@@ -65,7 +66,7 @@ module.exports = store => {
     //TODO: créer un index "entitesByValueOfProps" qui permet d'indexer avec plusieurs props au lieu d'une seule comme dans "entitesByValueOf"
     entitiesAndValueOfProp: prop => store.getFromP_ev(prop),
     getFromGroupBy: (groupBy, value) => get(groupBy, value, []),
-    constant: function (v1, v2) {
+    constant: function(v1, v2) {
       return arguments.length === 2 ? v2 : v1
     }, // dans le cas où il y a une source, constant est appelé avec 2 args mais c'est le 2ème qui compte
     first,
@@ -131,6 +132,12 @@ module.exports = store => {
     arrayToObject: arr => arr.reduce((acc, id) => set(acc, id, id), {}),
     mapObjectBy: (obj, exp) =>
       mapValues(obj, id => operators.query([{ constant: id }].concat(exp))),
+    // assigne sur arg1 ou sur un objet vide, le ou les objets sources (soit un objet seul ou un array de sources)
+    assign: (arg1, arg2) => {
+      const target = arg2 ? arg1 : {}
+      const sources = operators.query(arg2 ? arg2 : arg1)
+      return Object.assign.apply(null, concat(target, sources))
+    },
     each: (v, exps) => {
       let mapExp
       if (!exps) {
@@ -181,8 +188,8 @@ module.exports = store => {
     formatInteger: n =>
       get(n, "toLocaleString")
         ? n.toLocaleString("fr", {
-          maximumFractionDigits: 0,
-        })
+            maximumFractionDigits: 0,
+          })
         : "?",
     rmatNumber: (n, options) =>
       get(n, "toLocaleString") ? n.toLocaleString("fr", options) : "?",
@@ -192,7 +199,7 @@ module.exports = store => {
       n ? new Date(n).toLocaleTimeString("fr", options) : "?",
     formatDateTime: (n, options) =>
       n ? new Date(n).toLocaleString("fr", options) : "?",
-    formatBoolean: n => n ? "OUI" : "NON",
+    formatBoolean: n => (n ? "OUI" : "NON"),
   }
   return operators
 }
