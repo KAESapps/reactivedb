@@ -21,7 +21,7 @@ const monitor = (timeLabel, task) => () => {
   })
 }
 
-module.exports = dirPath => {
+module.exports = (dirPath, { writePatches = true } = {}) => {
   // auto load
   const data = new Map()
   let noDeltaEntries = false
@@ -133,7 +133,7 @@ module.exports = dirPath => {
         })
       })
     )
-    .then(() => fs.ensureDir(patchesPath))
+    .then(() => writePatches && fs.ensureDir(patchesPath))
     .then(() => {
       const store = epvStore(data)
       // auto save
@@ -156,17 +156,19 @@ module.exports = dirPath => {
       })
 
       const patchAndSave = patch => {
-        // save a backup of the patch
-        fs.writeFile(
-          path.join(
-            patchesPath,
-            new Date()
-              .toISOString()
-              .replace(":", "-")
-              .replace(":", "-")
-          ) + ".json",
-          JSON.stringify(patch)
-        )
+        if (writePatches) {
+          // save a backup of the patch
+          fs.writeFile(
+            path.join(
+              patchesPath,
+              new Date()
+                .toISOString()
+                .replace(":", "-")
+                .replace(":", "-")
+            ) + ".json",
+            JSON.stringify(patch)
+          )
+        }
         // start persisting the patch
         const writePromise = new Promise((resolve, reject) => {
           // var timeLabel = "persisting patch"
