@@ -191,11 +191,11 @@ module.exports = store => {
             maximumFractionDigits: 0,
           })
         : "?",
-    rmatNumber: (n, options) =>
+    formatNumber: (n, options) =>
       get(n, "toLocaleString") ? n.toLocaleString("fr", options) : "?",
     formatDate: (n, options) =>
       n ? new Date(n).toLocaleDateString("fr", options) : "?",
-    rmatTime: (n, options) =>
+    formatTime: (n, options) =>
       n ? new Date(n).toLocaleTimeString("fr", options) : "?",
     formatDateTime: (n, options) =>
       n ? new Date(n).toLocaleString("fr", options) : "?",
