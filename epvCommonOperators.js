@@ -204,7 +204,7 @@ module.exports = store => {
     toNumber,
 
     multiGroupBy: obsMemoize(
-      arg => {
+      arg => () => {
         const ANY = "$any$"
         const values = {}
         operators.query(arg.source).forEach(item => {
