@@ -1,10 +1,12 @@
 const autorun = require("kobs").autorun
 const create = require("lodash/create")
+const initValue = {}
 
 module.exports = (store, send) => {
   const unwatchs = new Map()
 
   const watch = ({ watchId, method = "query", arg }) => {
+    let previousValue = initValue
     unwatchs.set(
       watchId,
       autorun(() => {
@@ -14,7 +16,10 @@ module.exports = (store, send) => {
         } else {
           value = store[method](arg)
         }
-        send({ watchId, value })
+        if (value !== previousValue) { // prevent sending value if it is the same as before
+          previousValue = value
+          send({ watchId, value })
+        }
       })
     )
     // console.log("watching", method, arg)

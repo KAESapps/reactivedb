@@ -7,42 +7,55 @@ const every = require("lodash/every")
 const isUndefined = require("lodash/isUndefined")
 const isObjectLike = require("lodash/isObjectLike")
 
-const getEntitiesFrom = (epv, prop, value) => {
-  const entities = []
+// crée un index (map) avec un observable des entités par valeur existante de "prop"
+const getObservablesOfEntitiesGroupedByValue = (epv, prop) => {
+  const timeLabel = `createIndexOfEntitites for prop ${prop}`
+  console.time(timeLabel)
+
+  const pMap = new Map()
   epv.forEach((e, k) => {
-    e.forEach((v, p) => {
-      if (p !== prop) return
-      if (isObservable(v)) v = v.value //observable : on lit directement la valeur sans passer par le getter pour ne pas enregistrer de dépendance car c'est pour créer un observable sera mis à jour directement
-      if (v === value) entities.push(k)
-    })
+    let v = e.get(prop)
+    if (v == null) return
+    if (isObservable(v)) v = v.value //observable
+    if (v == null) return
+    let entitiesObs = pMap.get(v)
+    if (!entitiesObs) {
+      entitiesObs = new Obs([k], null, null, `pve::${prop}::${v}`)
+      pMap.set(v, entitiesObs)
+    } else {
+      entitiesObs.value.push(k)
+    }
   })
-  return entities
+
+  console.timeEnd(timeLabel)
+  return pMap
 }
+
 const groupEntitiesByValueOfProp = (epv, prop) => {
   const group = {}
   epv.forEach((e, k) => {
-    e.forEach((v, p) => {
-      if (p !== prop) return
-      if (isObservable(v)) v = v.value //observable
-      let entities = group[v]
-      if (!entities) {
-        entities = [k]
-        group[v] = entities
-      } else {
-        entities.push(k)
-      }
-    })
+    let v = e.get(prop)
+    if (v == null) return
+    if (isObservable(v)) v = v.value //observable
+    if (v == null) return
+    let entities = group[v]
+    if (!entities) {
+      entities = [k]
+      group[v] = entities
+    } else {
+      entities.push(k)
+    }
   })
   return group
 }
 const collectEntitiesAndValueOfProp = (epv, prop) => {
   const entities = {}
   epv.forEach((e, k) => {
-    e.forEach((v, p) => {
-      if (p !== prop) return
-      if (isObservable(v)) v = v.value //observable
-      entities[k] = v
-    })
+    let v = e.get(prop)
+    if (v == null) return
+    if (isObservable(v)) v = v.value //observable
+    if (v == null) return
+    entities[k] = v
   })
   return entities
 }
@@ -85,14 +98,17 @@ const patchPve = (store, pvePatch) => {
     let pMap = store.get(p)
     if (!pMap) return
     const obs = pMap.get(v)
-    if (!obs) return
+    if (!obs) {
+      pMap.set(v, new Obs([e], null, null, `pve::${p}::${v}`))
+      return
+    }
     const entities = obs.value
     const eIndex = entities.indexOf(e)
     if (add) {
-      if (e >= 0) return console.log("entity already indexed", p, v, e)
+      if (e >= 0) return //console.log("entity already indexed", p, v, e)
       entities.push(e)
     } else {
-      if (e < 0) return console.log("entity not indexed", p, v, e)
+      if (e < 0) return //console.log("entity not indexed", p, v, e)
       entities.splice(eIndex, 1)
     }
     obs.set(entities)
@@ -247,18 +263,18 @@ module.exports = epv => {
     return ret
   }
 
-  // crée un observable de e de façon lazy ainsi que la structure intermédiaire si besoin
+  // pour chaque p, crée un map d'observables de v -> [e]
   const pve = new Map()
   const getFromPve = (p, v) => {
     let pMap = pve.get(p)
     if (!pMap) {
-      pMap = new Map()
+      pMap = getObservablesOfEntitiesGroupedByValue(epv, p) // scan la base une seule fois pour toutes les valeurs de p (au lieu de la faire à chaque demande d'une nouvelle valeur comme avant)
       pve.set(p, pMap)
     }
     let e = pMap.get(v)
     if (!e) {
-      const eValue = getEntitiesFrom(epv, p, v)
-      e = new Obs(eValue, null, null, `pve::${p}::${v}`)
+      // s'il n'y a pas d'observable pour la valeur demandée, c'est qu'il n'y a pas (encore) de triplet avec cette valeur, donc, là, on crée de façon lazy un observable avec un array vide
+      e = new Obs([], null, null, `pve::${p}::${v}`)
       pMap.set(v, e)
     }
     return e.get()

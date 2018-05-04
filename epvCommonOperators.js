@@ -23,6 +23,11 @@ const sum = require("lodash/sum")
 const round = require("lodash/round")
 const zipObject = require("lodash/zipObject")
 const fromPairs = require("lodash/fromPairs")
+const updateWith = require("lodash/updateWith")
+const toNumber = require("lodash/toNumber")
+const cartesian = require("cartesian")
+const obsMemoize = require("./obsMemoize")
+const formatInteger = require("./operators/formatInteger")
 const log = fn => fn
 // const log = (fn, name) => (arg1, arg2) => {
 //   const timeName = `computing ${name}: ${arg1}, ${arg2}`
@@ -185,12 +190,7 @@ module.exports = store => {
       if (!branch) return value
       return operators.query([{ constant: value }].concat(branch))
     },
-    formatInteger: n =>
-      get(n, "toLocaleString")
-        ? n.toLocaleString("fr", {
-            maximumFractionDigits: 0,
-          })
-        : "?",
+    formatInteger,
     formatNumber: (n, options) =>
       get(n, "toLocaleString") ? n.toLocaleString("fr", options) : "?",
     formatDate: (n, options) =>
@@ -200,6 +200,76 @@ module.exports = store => {
     formatDateTime: (n, options) =>
       n ? new Date(n).toLocaleString("fr", options) : "?",
     formatBoolean: n => (n ? "OUI" : "NON"),
+
+    toNumber,
+
+    multiGroupBy: obsMemoize(
+      arg => {
+        const ANY = "$any$"
+        const values = {}
+        operators.query(arg.source).forEach(item => {
+          const dimValues = arg.dims.map(dimExp =>
+            operators.query([{ constant: item }].concat(dimExp))
+          )
+
+          // toutes les combinaisons de dimensions, totaux compris
+          const combinations = cartesian(dimValues.map(v => [v, ANY]))
+
+          combinations.forEach(path => {
+            // ajoute l'élément dans la liste croisée
+            updateWith(
+              values,
+              path,
+              arr => (arr ? arr.concat(item) : [item]),
+              Object
+            )
+          })
+        })
+
+        return values
+        /*
+      return {
+        // longueur 1200
+        1200: {
+          // lg 1200, essence idEss1
+          idEss1: {
+            // lg 1200, essence idEss1, qualité idQual1
+            idQual1: [item1, item2],
+            idQual2: [item5, item6],
+            // lg 1200, essence idEss1, toute qualité
+            $any$: [item1, item2, item5, item6],
+          },
+          idEss2: {
+            idQual1: [item3, item4],
+            $any$: [item3, item4]
+          },
+          // lg 1200, toute essence
+          $any$: {
+            // lg 1200, toute essence, qual1
+            idQual1: [item1, item2, item3, item4],
+            idQual2: [item5, item6],
+            // lg 1200, toute essence, toute qualité
+            $any$: [item1, item2, item3, item4, item5, item6]
+          }
+        },
+        $any$: {
+          ...
+        },
+      }
+      */
+      },
+      "multiGroupBy",
+      JSON.stringify
+    ),
+    getGroupsFromMultiGroupBy: (data, path) => {
+      return Object.keys(path.length > 0 ? get(data, path) : data).filter(
+        k => k !== "$any$"
+      )
+    },
+
+    getValuesFromMultiGroupBy: (data, path) => {
+      return get(data, path, [])
+    },
   }
   return operators
 }

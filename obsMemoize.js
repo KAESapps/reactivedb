@@ -1,11 +1,13 @@
 const { observable } = require("kobs")
+const identity = require("lodash/identity")
 
-module.exports = (fn, name) => {
+module.exports = (fn, name, hash = identity) => {
   const cache = new Map()
-  return key => {
+  return arg => {
+    const key = hash(arg)
     let obs = cache.get(key)
     if (!obs) {
-      const compute = fn(key)
+      const compute = fn(arg)
       obs = observable(compute, name + "/" + key)
       cache.set(key, obs)
     }
