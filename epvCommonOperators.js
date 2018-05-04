@@ -27,6 +27,7 @@ const updateWith = require("lodash/updateWith")
 const toNumber = require("lodash/toNumber")
 const cartesian = require("cartesian")
 const obsMemoize = require("./obsMemoize")
+const formatInteger = require("./operators/formatInteger")
 const log = fn => fn
 // const log = (fn, name) => (arg1, arg2) => {
 //   const timeName = `computing ${name}: ${arg1}, ${arg2}`
@@ -189,12 +190,7 @@ module.exports = store => {
       if (!branch) return value
       return operators.query([{ constant: value }].concat(branch))
     },
-    formatInteger: n =>
-      get(n, "toLocaleString")
-        ? n.toLocaleString("fr", {
-            maximumFractionDigits: 0,
-          })
-        : "?",
+    formatInteger,
     formatNumber: (n, options) =>
       get(n, "toLocaleString") ? n.toLocaleString("fr", options) : "?",
     formatDate: (n, options) =>
