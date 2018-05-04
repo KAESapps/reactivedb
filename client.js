@@ -46,12 +46,9 @@ module.exports = (clientRaw, authenticatedUser) => {
       )
       queriesCache.set(watchId, obs)
       // start watching server
-      rawWatch({ watchId, method, arg }, value => {
-        // TODO: perf workaround, on ne devrait pas avoir à comparer les valeurs
-        if (value !== obs.value.value) {
-          obs.set({ loaded: true, value })
-        }
-      }).catch(err => {
+      rawWatch({ watchId, method, arg }, value =>
+        obs.set({ loaded: true, value })
+      ).catch(err => {
         console.error("Error starting to watch", arg, err)
       })
     }
