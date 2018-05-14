@@ -14,6 +14,7 @@ const concat = require("lodash/concat")
 const mapValues = require("lodash/mapValues")
 const reverse = require("lodash/reverse")
 const difference = require("lodash/difference")
+const intersection = require("lodash/intersection")
 const last = require("lodash/last")
 const first = arr => (arr ? arr[0] : null)
 const flatten = require("lodash/flatten")
@@ -179,6 +180,7 @@ module.exports = store => {
     difference: ([s1, s2]) => {
       return difference(s1, s2)
     },
+    intersection: ([s1, s2]) => intersection(s1, s2),
     branch: (value, args) => {
       if (value === undefined) {
         value = null
