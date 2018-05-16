@@ -29,6 +29,7 @@ const toNumber = require("lodash/toNumber")
 const cartesian = require("cartesian")
 const obsMemoize = require("./obsMemoize")
 const formatInteger = require("./operators/formatInteger")
+const formatDate = require("./operators/formatDate")
 const log = fn => fn
 // const log = (fn, name) => (arg1, arg2) => {
 //   const timeName = `computing ${name}: ${arg1}, ${arg2}`
@@ -195,8 +196,7 @@ module.exports = store => {
     formatInteger,
     formatNumber: (n, options) =>
       get(n, "toLocaleString") ? n.toLocaleString("fr", options) : "?",
-    formatDate: (n, options) =>
-      n ? new Date(n).toLocaleDateString("fr", options) : "?",
+    formatDate,
     formatTime: (n, options) =>
       n ? new Date(n).toLocaleTimeString("fr", options) : "?",
     formatDateTime: (n, options) =>
