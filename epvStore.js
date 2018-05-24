@@ -4,6 +4,7 @@ const forEach = require("lodash/forEach")
 const includes = require("lodash/includes")
 const pull = require("lodash/pull")
 const every = require("lodash/every")
+const assign = require("lodash/assign")
 const isUndefined = require("lodash/isUndefined")
 const isObjectLike = require("lodash/isObjectLike")
 
@@ -102,7 +103,7 @@ const patchPve = (store, pvePatch) => {
       pMap.set(v, new Obs([e], null, null, `pve::${p}::${v}`))
       return
     }
-    const entities = obs.value
+    const entities = obs.value.slice()
     const eIndex = entities.indexOf(e)
     if (add) {
       if (e >= 0) return //console.log("entity already indexed", p, v, e)
@@ -115,6 +116,7 @@ const patchPve = (store, pvePatch) => {
   })
 }
 
+// TODO: à rendre non-mutable ?
 const patchGroupBy = (store, pvePatch) => {
   forEach(pvePatch, ([p, v, e, add]) => {
     let obs = store.get(p)
@@ -146,10 +148,11 @@ const patchP_ev = (store, epvPatch) => {
       let obs = store.get(p)
       if (!obs) return
       const entities = obs.value
+      // on ne modifie pas l'observable si pas de changement
       if (entities[e] !== v) {
-        // on ne modifie pas l'observable si pas de changement
         entities[e] = v
-        obs.set(entities) // on déclenche la notification de la modif de l'observable
+        // on déclenche la modif de l'observable avec un clone du résultat
+        obs.set(assign({}, entities))
       }
     })
   })
@@ -218,7 +221,7 @@ const patchMatchingResults = (store, epvPatch, epv) => {
         }
       }
     })
-    if (entitiesChanged) matchingResult.set(entities) // notifiy observers
+    if (entitiesChanged) matchingResult.set(entities.slice()) // notify observers with clone
   })
 }
 const collectEntitiesMatching = (epv, filter) => {
