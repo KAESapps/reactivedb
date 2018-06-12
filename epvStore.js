@@ -330,8 +330,21 @@ module.exports = epv => {
     return result.get()
   }
 
+  const backup = () => {
+    const data = {}
+    epv.forEach((pv, e) => {
+      const itemData = {}
+      pv.forEach((v, p) => {
+        itemData[p] = v
+      })
+      data[e] = itemData
+    })
+    return data
+  }
+
   return {
     data: epv,
+    backup,
     createPatchToRemoveAllPropsOf,
     getFromEpv,
     getFromPve,
