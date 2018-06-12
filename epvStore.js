@@ -335,7 +335,7 @@ module.exports = epv => {
     epv.forEach((pv, e) => {
       const itemData = {}
       pv.forEach((v, p) => {
-        itemData[p] = v
+        itemData[p] = isObservable(v) ? v.value : v
       })
       data[e] = itemData
     })
