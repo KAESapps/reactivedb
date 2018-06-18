@@ -9,7 +9,11 @@
     "type": "git",
     "url": "git+https://github.com/KAESapps/reactivedb.git"
   },
-  "keywords": ["db", "reactive", "realtime"],
+  "keywords": [
+    "db",
+    "reactive",
+    "realtime"
+  ],
   "author": "KaeS",
   "license": "MIT",
   "bugs": {

@@ -264,9 +264,9 @@ module.exports = store => {
       JSON.stringify
     ),
     getGroupsFromMultiGroupBy: (data, path) => {
-      return Object.keys(path.length > 0 ? get(data, path) : data).filter(
-        k => k !== "$any$"
-      )
+      const groups = path.length > 0 ? get(data, path) : data
+      if (!groups) return []
+      return Object.keys(groups).filter(k => k !== "$any$")
     },
 
     getValuesFromMultiGroupBy: (data, path) => {
