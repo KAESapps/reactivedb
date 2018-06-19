@@ -43,6 +43,7 @@ const unsetObject = (exports.unsetObject = (store, k1, k2) => {
   if (Object.keys(v1).length === 0) delete store[k1]
 })
 
+// mute store (object) en appliquant patch
 exports.patch = (store, patch) => {
   forEach(patch, (k1Patch, k1) => {
     let m1 = store.get(k1)
@@ -59,6 +60,26 @@ exports.patch = (store, patch) => {
     })
     if (m1.size === 0) store.delete(k1)
   })
+}
+
+// version plain object de patch
+exports.patchObject = (store, patch) => {
+  forEach(patch, (k1Patch, k1) => {
+    let m1 = store[k1]
+    if (!m1) {
+      m1 = {}
+      store[k1] = m1
+    }
+    forEach(k1Patch, (v2, k2) => {
+      if (v2 == null) {
+        delete m1[k2]
+      } else {
+        m1[k2] = v2
+      }
+    })
+    if (Object.keys(m1).length === 0) delete store[k1]
+  })
+  return store
 }
 
 // source est un map de maps et le résultat est un kkv plain object
