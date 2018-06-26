@@ -206,6 +206,8 @@ module.exports = store => {
     toNumber,
 
     multiGroupBy: obsMemoize(
+      // on inclue la définition de la source dans les arguments pour pouvoir
+      // memoizer le résultat à partir de la définition de source et non de sa valeur
       arg => () => {
         const ANY = "$any$"
         const values = {}
