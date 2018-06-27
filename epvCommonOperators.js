@@ -76,6 +76,8 @@ module.exports = store => {
     constant: function(v1, v2) {
       return arguments.length === 2 ? v2 : v1
     }, // dans le cas où il y a une source, constant est appelé avec 2 args mais c'est le 2ème qui compte
+    typeof: v => typeof v,
+    get: (v, prop) => get(v, prop),
     first,
     last,
     flatten,
