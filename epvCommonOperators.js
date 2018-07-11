@@ -26,6 +26,7 @@ const zipObject = require("lodash/zipObject")
 const fromPairs = require("lodash/fromPairs")
 const updateWith = require("lodash/updateWith")
 const toNumber = require("lodash/toNumber")
+const padStart = require("lodash/padStart")
 const cartesian = require("cartesian")
 const obsMemoize = require("./obsMemoize")
 const formatInteger = require("./operators/formatInteger")
@@ -95,6 +96,10 @@ module.exports = store => {
     every,
     unique: uniq,
     round,
+    padStart: (s, arg) => {
+      if (typeof arg === "number") return padStart(s, arg)
+      return padStart(s, arg.length, arg.chars)
+    },
     zipObject: args => zipObject(args[0], args[1]),
     fromPairs,
     concat: (v1, v2) => (Array.isArray(v1) ? v1.concat(v2) : v1 + v2),
