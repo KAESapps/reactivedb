@@ -1,21 +1,39 @@
-var level = require("level-browserify")
-const db = level("persistedObservables", { valueEncoding: "json" })
+const IDBStore = require("idb-wrapper")
+const getDb = new Promise((resolve, reject) => {
+  const db = new IDBStore({
+    storeName: "persistedObservables",
+    autoIncrement: false,
+    onStoreReady: () => resolve(db),
+    keyPath: null,
+    onError: reject,
+  })
+})
 const { Obs } = require("kobs")
 
-module.exports = (name, initValue) =>
-  new Promise(resolve => {
-    db.get(name, (err, value) => {
-      const obs = new Obs(err ? initValue : value, null, null, name)
-      const setAndPersist = newValue => {
-        db.put(
+module.exports = (name, initValue) => {
+  const obs = new Obs(null, null, null, name)
+  return getDb.then(
+    db =>
+      new Promise((resolve, reject) => {
+        db.get(
           name,
-          newValue,
-          err => err && console.error("Error persiting value", err)
+          value => {
+            obs.set(value || initValue)
+            const setAndPersist = newValue => {
+              db.put(
+                name,
+                newValue,
+                () => {}, // success
+                err => console.error("Error persisting value", err)
+              )
+              obs.set(newValue)
+            }
+            resolve(function(arg) {
+              return arguments.length ? setAndPersist(arg) : obs.get()
+            })
+          },
+          reject
         )
-        obs.set(newValue)
-      }
-      resolve(function(arg) {
-        return arguments.length ? setAndPersist(arg) : obs.get()
       })
-    })
-  })
+  )
+}
