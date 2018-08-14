@@ -19,6 +19,7 @@ const last = require("lodash/last")
 const first = arr => (arr ? arr[0] : null)
 const flatten = require("lodash/flatten")
 const take = require("lodash/take")
+const drop = require("lodash/drop")
 const takeEnd = require("lodash/takeRight")
 const sum = require("lodash/sum")
 const round = require("lodash/round")
@@ -86,6 +87,7 @@ module.exports = store => {
     minus: (v, exp) => v - operators.query(exp),
     take: (v, n) => (typeof v === "string" ? v.slice(0, n) : take(v, n)),
     takeEnd,
+    drop,
     count: arr => arr.length,
     contains: (arr, exp) => includes(arr, operators.query(exp)),
     ObjectKeys: o => Object.keys(o),
