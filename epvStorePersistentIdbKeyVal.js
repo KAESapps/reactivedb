@@ -46,7 +46,7 @@ const patchKey = (storeName, patchCount) =>
   storeName + "/" + padStart(patchCount, 5, "0")
 const maxPatches = 50
 
-const createDb = dbName => new Store("apinfor-data", dbName)
+const createDb = (storeName, dbName) => new Store(dbName, storeName)
 const ensureInitStore = ({ keys, db }) => {
   if (keys.indexOf("activeStore") >= 0) return Promise.resolve(keys)
   const activeStoreName = new Date().toISOString()
@@ -129,7 +129,7 @@ const createNewStore = (db, data, stores) => {
 // store is a virtual store with state and patches
 // expect to be called wtih dbName
 module.exports = pPipe([
-  dbName => createDb(dbName),
+  (dbName, storeName) => createDb(dbName, storeName),
   ctxAssign("db"),
   ctxAssign("keys", ({ db }) => dbCall(db, keys)),
   ctxAssign("keys", ensureInitStore),
