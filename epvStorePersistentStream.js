@@ -1,6 +1,4 @@
-const nodeFs = require("fs")
-const { promisify } = require("util")
-const fsMove = promisify(nodeFs.rename)
+const archive = require("./archive")
 const fs = require("fs-extra")
 const path = require("path")
 const sanitizeFilename = require("sanitize-filename")
@@ -93,12 +91,13 @@ module.exports = (dirPath, { writePatches = true } = {}) => {
       // archive current files (only if there was delta entries)
       monitor("archive current files", () => {
         if (noDeltaEntries) return Promise.resolve()
-        return fsMove(
+        return archive(
           path.join(dirPath, "current"),
           path.join(
             dirPath,
             "archives",
-            sanitizeFilename(new Date().toISOString(), { replacement: "-" })
+            sanitizeFilename(new Date().toISOString(), { replacement: "-" }) +
+              ".zip"
           )
         )
       })

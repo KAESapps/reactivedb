@@ -21,6 +21,7 @@
   },
   "homepage": "https://github.com/KAESapps/reactivedb#readme",
   "dependencies": {
+    "archiver": "3.0.0",
     "cartesian": "1.0.1",
     "fs-extra": "4.0.1",
     "idb-keyval": "3.0.5",
