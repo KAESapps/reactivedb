@@ -1,4 +1,5 @@
 const archive = require("./archive")
+const util = require("util")
 const fs = require("fs-extra")
 const path = require("path")
 const sanitizeFilename = require("sanitize-filename")
@@ -23,6 +24,7 @@ module.exports = (dirPath, { writePatches = true } = {}) => {
   // auto load
   const data = new Map()
   let noDeltaEntries = false
+  const currentPath = path.join(dirPath, "current")
   const statePath = path.join(dirPath, "current", "state")
   const deltaPath = path.join(dirPath, "current", "delta")
   const patchesPath = path.join(dirPath, "current", "patches")
@@ -92,14 +94,14 @@ module.exports = (dirPath, { writePatches = true } = {}) => {
       monitor("archive current files", () => {
         if (noDeltaEntries) return Promise.resolve()
         return archive(
-          path.join(dirPath, "current"),
+          currentPath,
           path.join(
             dirPath,
             "archives",
             sanitizeFilename(new Date().toISOString(), { replacement: "-" }) +
               ".zip"
           )
-        )
+        ).then(() => fs.remove(currentPath))
       })
     )
     .then(() => fs.ensureFile(statePath))
@@ -139,7 +141,7 @@ module.exports = (dirPath, { writePatches = true } = {}) => {
       console.log("enabling auto-save")
 
       // on ouvre une stream en écriture sur le fichier delta qui doit être vide
-      const ws = fs.createWriteStream(path.join(dirPath, "current", "delta"))
+      const ws = fs.createWriteStream(deltaPath)
       ws.on("error", err =>
         console.error("Erreur de sauvegarde des données", err)
       )
