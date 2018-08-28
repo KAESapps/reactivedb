@@ -211,7 +211,7 @@ module.exports = (dirPath, { writePatches = true } = {}) => {
               // console.log(count, "rows writen")
               // console.timeEnd(timeLabel)
               write(null)
-              resolve()
+              resolve(patch)
             } else {
               write(JSON.stringify(triplet) + "\n")
             }

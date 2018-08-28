@@ -1,4 +1,5 @@
 const watchable = require("./watchableStore")
+const isPromise = v => v && v.then
 
 // create a watchable store from store and expose it on a ws server
 module.exports = (store, wss) =>
@@ -18,7 +19,17 @@ module.exports = (store, wss) =>
         try {
           callId = data.callId
           const res = watchableStore[data.method](data.arg)
-          send({ callId, res })
+          if (isPromise(res)) {
+            res.then(
+              v => send({ callId, res: v }),
+              err => {
+                send({ callId, err: err.message })
+                throw err
+              }
+            )
+          } else {
+            send({ callId, res })
+          }
         } catch (err) {
           console.error("error responding to method call", err)
           send({ callId, err: err.message })
