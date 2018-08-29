@@ -212,8 +212,16 @@ module.exports = store => {
     formatDateTime: (n, options) =>
       n ? new Date(n).toLocaleString("fr", options) : "?",
     formatBoolean: n => (n ? "OUI" : "NON"),
+    formatCurrency: n =>
+      get(n, "toLocaleString")
+        ? n.toLocaleString("fr", {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+          })
+        : "?",
 
     toNumber,
+    stringify: JSON.stringify,
 
     multiGroupBy: obsMemoize(
       // on inclue la définition de la source dans les arguments pour pouvoir
