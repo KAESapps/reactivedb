@@ -17,6 +17,7 @@ const difference = require("lodash/difference")
 const intersection = require("lodash/intersection")
 const last = require("lodash/last")
 const first = arr => (arr ? arr[0] : null)
+const startsWith = require("lodash/startsWith")
 const flatten = require("lodash/flatten")
 const take = require("lodash/take")
 const drop = require("lodash/drop")
@@ -185,6 +186,9 @@ module.exports = store => {
     equal: (arg1, arg2) => {
       const [v1, v2] = Array.isArray(arg1) ? arg1 : [arg1, arg2]
       return v1 === v2
+    },
+    startsWith: (arg1, arg2) => {
+      return startsWith(arg1, arg2)
     },
     append: (v, exp) => [v, operators.query(exp)],
     union: ([s1, s2]) => s1.concat(s2),
