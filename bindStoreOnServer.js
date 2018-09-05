@@ -20,9 +20,10 @@ module.exports = (store, wss) =>
           callId = data.callId
           const res = watchableStore[data.method](data.arg)
           if (isPromise(res)) {
-            res.then(
+            return res.then(
               v => send({ callId, res: v }),
               err => {
+                console.error("error responding to method call", err)
                 send({ callId, err: err.message })
                 throw err
               }

@@ -85,7 +85,10 @@ module.exports = store => {
     last,
     flatten,
     sum,
+    plus: (v, exp) => v + operators.query(exp),
     minus: (v, exp) => v - operators.query(exp),
+    divide: (v, exp) => v / operators.query(exp),
+    multiply: (v, exp) => v * operators.query(exp),
     take: (v, n) => (typeof v === "string" ? v.slice(0, n) : take(v, n)),
     takeEnd,
     drop,
@@ -164,7 +167,6 @@ module.exports = store => {
       } else {
         mapExp = exp => operators.query([{ constant: v }].concat(exp))
       }
-
       return (Array.isArray(exps) ? map : mapValues)(exps, mapExp)
     },
     gte: (arg1, arg2) => {
