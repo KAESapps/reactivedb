@@ -29,6 +29,7 @@ const fromPairs = require("lodash/fromPairs")
 const updateWith = require("lodash/updateWith")
 const toNumber = require("lodash/toNumber")
 const padStart = require("lodash/padStart")
+const matchSorter = require("match-sorter")
 const cartesian = require("cartesian")
 const obsMemoize = require("./obsMemoize")
 const formatInteger = require("./operators/formatInteger")
@@ -297,6 +298,24 @@ module.exports = store => {
 
     getValuesFromMultiGroupBy: (data, path) => {
       return get(data, path, [])
+    },
+
+    matchSorter: (source, arg) => {
+      // keys est facultatif
+      const { searchValue, mapBy, keys } = arg
+
+      // map source items
+      const items = source.map(item => ({
+        sourceItem: item,
+        sortingValue: operators.query([{ constant: item }].concat(mapBy)),
+      }))
+
+      // sort items, and return sorted source items back
+      return matchSorter(items, searchValue, {
+        keys: keys
+          ? keys.map(k => i => i.sortingValue[k])
+          : [i => i.sortingValue],
+      }).map(i => i.sourceItem)
     },
   }
   return operators
