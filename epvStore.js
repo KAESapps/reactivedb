@@ -101,7 +101,7 @@ const patchEpv = (store, patch) => {
       if (currentValue != null)
         update(pvePatch, [p, currentValue, "remove"], addToArray(e))
       // la propriété passe à la valeur "pPatch"
-      if (pPatch != null) update(pvePatch, [p, pPatch, "remove"], addToArray(e))
+      if (pPatch != null) update(pvePatch, [p, pPatch, "add"], addToArray(e))
     })
     if (m1.size === 0) store.delete(e)
   })
