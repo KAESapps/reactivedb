@@ -5,8 +5,20 @@ const includes = require("lodash/includes")
 const pull = require("lodash/pull")
 const every = require("lodash/every")
 const assign = require("lodash/assign")
+const concat = require("lodash/concat")
 const isUndefined = require("lodash/isUndefined")
 const isObjectLike = require("lodash/isObjectLike")
+const update = require("lodash/update")
+const without = require("lodash/without")
+
+const addToArray = v => a => {
+  if (a) {
+    a.push(v)
+    return a
+  } else {
+    return [v]
+  }
+}
 
 // crée un index (map) avec un observable des entités par valeur existante de "prop"
 const getObservablesOfEntitiesGroupedByValue = (epv, prop) => {
@@ -62,7 +74,7 @@ const collectEntitiesAndValueOfProp = (epv, prop) => {
 }
 
 const patchEpv = (store, patch) => {
-  const pvePatch = []
+  const pvePatch = {}
   forEach(patch, (ePatch, e) => {
     let m1 = store.get(e)
     if (!m1) {
@@ -85,8 +97,11 @@ const patchEpv = (store, patch) => {
           m1.set(p, pPatch)
         }
       }
-      if (currentValue != null) pvePatch.push([p, currentValue, e, false])
-      if (pPatch != null) pvePatch.push([p, pPatch, e, true])
+      // la propriété (de l'entité) n'a plus la valeur "currentValue"
+      if (currentValue != null)
+        update(pvePatch, [p, currentValue, "remove"], addToArray(e))
+      // la propriété passe à la valeur "pPatch"
+      if (pPatch != null) update(pvePatch, [p, pPatch, "remove"], addToArray(e))
     })
     if (m1.size === 0) store.delete(e)
   })
@@ -95,51 +110,61 @@ const patchEpv = (store, patch) => {
 
 // ceci n'est pas la source de vérité, ce n'est qu'un index, donc on n'y stocke que des observables actifs que l'on mute en fonction du patch
 const patchPve = (store, pvePatch) => {
-  forEach(pvePatch, ([p, v, e, add]) => {
+  console.time("patchPve")
+  forEach(pvePatch, (ve, p) => {
     let pMap = store.get(p)
     if (!pMap) return
-    const obs = pMap.get(v)
-    if (!obs) {
-      pMap.set(v, new Obs([e], null, null, `pve::${p}::${v}`))
-      return
-    }
-    const entities = obs.value.slice()
-    const eIndex = entities.indexOf(e)
-    if (add) {
-      if (e >= 0) return //console.log("entity already indexed", p, v, e)
-      entities.push(e)
-    } else {
-      if (e < 0) return //console.log("entity not indexed", p, v, e)
-      entities.splice(eIndex, 1)
-    }
-    obs.set(entities)
+    forEach(ve, (addRemove, v) => {
+      const { add: eListAdd, remove: eListRemove } = addRemove
+      const obs = pMap.get(v)
+
+      if (eListAdd) {
+        // ajout dans l'index sur la nouvelle valeur
+        if (obs) {
+          const entities = obs.value
+          obs.set(entities.concat(eListAdd))
+        } else {
+          pMap.set(v, new Obs(eListAdd, null, null, `pve::${p}::${v}`))
+          return
+        }
+      }
+
+      if (eListRemove) {
+        // suppression de l'index sur l'ancienne valeur
+        const entities = obs.value
+        obs.set(without.apply(null, [entities].concat(eListRemove)))
+      }
+    })
   })
+  console.timeEnd("patchPve")
 }
 
 // TODO: à rendre non-mutable ?
 const patchGroupBy = (store, pvePatch) => {
-  forEach(pvePatch, ([p, v, e, add]) => {
+  console.time("patchGroupBy")
+
+  forEach(pvePatch, (ve, p) => {
     let obs = store.get(p)
     if (!obs) return
-    const group = obs.value
-    let entities = group[v]
-    if (add) {
-      if (!entities) {
-        entities = [e]
-        group[v] = entities
-      } else {
-        entities.push(e)
+    const pGroup = obs.value
+    forEach(ve, (addRemove, v) => {
+      const { add: eListAdd, remove: eListRemove } = addRemove
+
+      const entities = pGroup[v]
+      if (eListAdd) {
+        // ajout dans l'index sur la nouvelle valeur
+        pGroup[v] = concat(entities, eListAdd)
       }
-    } else {
-      // remove
-      if (entities.length === 1) {
-        delete group[v]
-      } else {
-        entities.splice(entities.indexOf(e), 1)
+
+      if (eListRemove) {
+        // suppression de l'index sur l'ancienne valeur
+        pGroup[v] = without.apply(null, [entities].concat(eListRemove))
       }
-    }
-    obs.set(group)
+    })
+    obs.set(pGroup)
   })
+
+  console.timeEnd("patchGroupBy")
 }
 
 const patchP_ev = (store, epvPatch) => {
