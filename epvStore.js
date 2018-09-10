@@ -110,7 +110,7 @@ const patchEpv = (store, patch) => {
 
 // ceci n'est pas la source de vérité, ce n'est qu'un index, donc on n'y stocke que des observables actifs que l'on mute en fonction du patch
 const patchPve = (store, pvePatch) => {
-  console.time("patchPve")
+  //console.time("patchPve")
   forEach(pvePatch, (ve, p) => {
     let pMap = store.get(p)
     if (!pMap) return
@@ -136,12 +136,12 @@ const patchPve = (store, pvePatch) => {
       }
     })
   })
-  console.timeEnd("patchPve")
+  //console.timeEnd("patchPve")
 }
 
 // TODO: à rendre non-mutable ?
 const patchGroupBy = (store, pvePatch) => {
-  console.time("patchGroupBy")
+  // console.time("patchGroupBy")
 
   forEach(pvePatch, (ve, p) => {
     let obs = store.get(p)
@@ -164,7 +164,7 @@ const patchGroupBy = (store, pvePatch) => {
     obs.set(pGroup)
   })
 
-  console.timeEnd("patchGroupBy")
+  // console.timeEnd("patchGroupBy")
 }
 
 const patchP_ev = (store, epvPatch) => {
