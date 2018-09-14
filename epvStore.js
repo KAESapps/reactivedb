@@ -20,6 +20,21 @@ const addToArray = v => a => {
   }
 }
 
+const updateVePatch = ({ value, addRemove, entity }) => veMap => {
+  if (!veMap) {
+    return new Map([[value, { [addRemove]: [entity] }]])
+  }
+
+  const vObject = veMap.get(value)
+  update(vObject, addRemove, addToArray(entity))
+  veMap.set(value, vObject)
+  return veMap
+}
+
+const updatePvePatch = (pvePatch, { prop, value, addRemove, entity }) => {
+  update(pvePatch, prop, updateVePatch({ value, addRemove, entity }))
+}
+
 // crée un index (map) avec un observable des entités par valeur existante de "prop"
 const getObservablesOfEntitiesGroupedByValue = (epv, prop) => {
   const timeLabel = `createIndexOfEntitites for prop ${prop}`
@@ -81,27 +96,38 @@ const patchEpv = (store, patch) => {
       m1 = new Map()
       store.set(e, m1)
     }
-    forEach(ePatch, (pPatch, p) => {
+    forEach(ePatch, (newValue, p) => {
       const v2 = m1.get(p)
       let currentValue
       if (isObservable(v2)) {
         currentValue = v2.value
-        if (pPatch === currentValue) return // pas de modif
-        v2.set(pPatch) // si la valeur est observée, on stocke excplicitement null car on ne peut pas supprimer l'observable
+        if (newValue === currentValue) return // pas de modif
+        v2.set(newValue) // si la valeur est observée, on stocke explicitement null car on ne peut pas supprimer l'observable
       } else {
         currentValue = v2
-        if (pPatch == null) {
+        if (newValue == null) {
           m1.delete(p)
         } else {
-          if (pPatch === currentValue) return // pas de modif
-          m1.set(p, pPatch)
+          if (newValue === currentValue) return // pas de modif
+          m1.set(p, newValue)
         }
       }
       // la propriété (de l'entité) n'a plus la valeur "currentValue"
       if (currentValue != null)
-        update(pvePatch, [p, currentValue, "remove"], addToArray(e))
-      // la propriété passe à la valeur "pPatch"
-      if (pPatch != null) update(pvePatch, [p, pPatch, "add"], addToArray(e))
+        updatePvePatch(pvePatch, {
+          prop: p,
+          value: currentValue,
+          addRemove: "remove",
+          entity: e,
+        })
+      // la propriété passe à la valeur "newValue"
+      if (newValue != null)
+        updatePvePatch(pvePatch, {
+          prop: p,
+          value: newValue,
+          addRemove: "add",
+          entity: e,
+        })
     })
     if (m1.size === 0) store.delete(e)
   })
@@ -114,8 +140,8 @@ const patchPve = (store, pvePatch) => {
   forEach(pvePatch, (ve, p) => {
     let pMap = store.get(p)
     if (!pMap) return
-    forEach(ve, (addRemove, v) => {
-      const { add: eListAdd, remove: eListRemove } = addRemove
+    ve.forEach((addRemoveObj, v) => {
+      const { add: eListAdd, remove: eListRemove } = addRemoveObj
       const obs = pMap.get(v)
 
       if (eListAdd) {
@@ -147,7 +173,7 @@ const patchGroupBy = (store, pvePatch) => {
     let obs = store.get(p)
     if (!obs) return
     const pGroup = obs.value
-    forEach(ve, (addRemove, v) => {
+    ve.forEach((addRemove, v) => {
       const { add: eListAdd, remove: eListRemove } = addRemove
 
       const entities = pGroup[v]
