@@ -1,20 +1,46 @@
-// const clientRaw = require("./client-raw")
+const isFunction = require("lodash/isFunction")
 const { Obs } = require("kobs")
 const unwatchDelay = 30 * 1000 // server unwatch is called if UI is not observing during 30 seconds
 
-module.exports = (clientRaw, authenticatedUser) => {
+module.exports = (rawClientArg, authenticatedUser) => {
   const queriesCache = new Map()
   const pendingUnwatch = new Map()
 
-  const {
-    watch: rawWatch,
-    unwatch,
-    patch,
-    query: queryOnce,
-    onClose,
-    close,
-    call,
-  } = clientRaw
+  let rawClient
+
+  let onCloseCb
+
+  const onNewRawClient = function(newClient) {
+    newClient.timestamp = new Date()
+    console.log("new raw client ", newClient, newClient.timestamp)
+    // reconnect
+    rawClient = newClient
+    onCloseCb && rawClient.onClose(onCloseCb)
+    // relaunch watched queries
+    queriesCache.forEach((obs, watchId) => {
+      const { method, arg } = JSON.parse(watchId)
+      rawClient
+        .watch({ watchId, method, arg }, value =>
+          obs.set({ loaded: true, value })
+        )
+        .catch(err => {
+          console.error("Error starting to watch", arg, err)
+        })
+    })
+  }
+
+  if (isFunction(rawClientArg)) {
+    // rawClientArg is a function that pulses when a new rawClient should be used
+    rawClientArg(onNewRawClient)
+  } else {
+    // if not a function, then it's a static raw-client
+    onNewRawClient(rawClientArg)
+  }
+
+  const onClose = cb => {
+    onCloseCb = cb
+    rawClient.onClose(cb)
+  }
 
   const watch = (method, arg) => {
     const watchId = JSON.stringify({ method, arg })
@@ -28,7 +54,7 @@ module.exports = (clientRaw, authenticatedUser) => {
         pendingUnwatch.set(
           watchId,
           setTimeout(() => {
-            unwatch({ watchId }).catch(err => {
+            rawClient.unwatch({ watchId }).catch(err => {
               console.error("Error stopping to watch", method, arg, err)
             })
             queriesCache.delete(watchId)
@@ -46,26 +72,31 @@ module.exports = (clientRaw, authenticatedUser) => {
       )
       queriesCache.set(watchId, obs)
       // start watching server
-      rawWatch({ watchId, method, arg }, value =>
-        obs.set({ loaded: true, value })
-      ).catch(err => {
-        console.error("Error starting to watch", arg, err)
-      })
+      rawClient
+        .watch({ watchId, method, arg }, value =>
+          obs.set({ loaded: true, value })
+        )
+        .catch(err => {
+          console.error("Error starting to watch", arg, err)
+        })
     }
     return obs.get()
   }
-  const query = q => watch("query", q)
-  const clearLocalData = () => call("clearLocalData")
+
+  const proxyRawMethod = method =>
+    function() {
+      return rawClient[method].apply(rawClient, arguments)
+    }
 
   return {
     authenticatedUser,
-    patch,
-    query,
-    queryOnce,
-    onClose,
-    call,
+    call: proxyRawMethod("call"),
     watch,
-    clearLocalData,
-    close,
+    clearLocalData: () => rawClient.call("clearLocalData"),
+    close: proxyRawMethod("close"),
+    onClose,
+    query: q => watch("query", q),
+    queryOnce: proxyRawMethod("query"),
+    patch: proxyRawMethod("patch"),
   }
 }
