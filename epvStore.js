@@ -25,9 +25,12 @@ const updateVePatch = ({ value, addRemove, entity }) => veMap => {
     return new Map([[value, { [addRemove]: [entity] }]])
   }
 
-  const vObject = veMap.get(value)
+  let vObject = veMap.get(value)
+  if (!vObject) {
+    vObject = {}
+    veMap.set(value, vObject)
+  }
   update(vObject, addRemove, addToArray(entity))
-  veMap.set(value, vObject)
   return veMap
 }
 
