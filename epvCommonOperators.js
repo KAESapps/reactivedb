@@ -50,7 +50,9 @@ module.exports = store => {
     }),
     entityRemovePatch: entityId =>
       store.createPatchToRemoveAllPropsOf(entityId),
-    entitiesMatching: filter => {
+    entitiesMatching: function(arg1, arg2) {
+      const filter = arguments.length === 2 ? arg2 : arg1
+
       const filterKeys = Object.keys(filter)
       if (filterKeys.length === 1) {
         // optimise le cas avec une seule prop par égalité
