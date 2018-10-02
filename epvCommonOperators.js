@@ -34,6 +34,7 @@ const cartesian = require("cartesian")
 const obsMemoize = require("./obsMemoize")
 const formatInteger = require("./operators/formatInteger")
 const formatDate = require("./operators/formatDate")
+const formatDateTime = require("./operators/formatDateTime")
 const log = fn => fn
 // const log = (fn, name) => (arg1, arg2) => {
 //   const timeName = `computing ${name}: ${arg1}, ${arg2}`
@@ -218,8 +219,7 @@ module.exports = store => {
     formatDate,
     formatTime: (n, options) =>
       n ? new Date(n).toLocaleTimeString("fr", options) : "?",
-    formatDateTime: (n, options) =>
-      n ? new Date(n).toLocaleString("fr", options) : "?",
+    formatDateTime,
     formatBoolean: n => (n ? "OUI" : "NON"),
     formatCurrency: n =>
       get(n, "toLocaleString")
