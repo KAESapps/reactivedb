@@ -4,6 +4,7 @@ const sortBy = require("lodash/sortBy")
 const some = require("lodash/some")
 const every = require("lodash/every")
 const uniq = require("lodash/uniq")
+const uniqBy = require("lodash/uniqBy")
 const includes = require("lodash/includes")
 const filter = require("lodash/filter")
 const groupBy = require("lodash/groupBy")
@@ -105,6 +106,8 @@ module.exports = store => {
     some,
     every,
     unique: uniq,
+    uniqueBy: (arr, exp) =>
+      uniqBy(arr, v => operators.query(concat({ constant: v }, exp))),
     round,
     padStart: (s, arg) => {
       if (typeof arg === "number") return padStart(s, arg)
