@@ -101,6 +101,7 @@ module.exports = store => {
     contains: (arr, exp) => includes(arr, operators.query(exp)),
     ObjectKeys: o => Object.keys(o),
     reverse: arr => reverse(arr.slice()),
+    toBoolean: v => !!v,
     not: v => !v,
     identity: v => v,
     some,
