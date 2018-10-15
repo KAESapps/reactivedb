@@ -5,6 +5,13 @@ const isPromise = v => v && v.then
 module.exports = (store, wss) =>
   new Promise((resolve, reject) => {
     wss.on("connection", ws => {
+      // const send = data => {
+      //   try {
+      //     ws.send(JSON.stringify(data))
+      //   } catch (err) {
+      //     console.error("error trying to send data to client", err, data)
+      //   }
+      // }
       const send = data => ws.send(JSON.stringify(data))
       const watchableStore = watchable(store, send)
       ws.on("message", str => {
@@ -15,26 +22,26 @@ module.exports = (store, wss) =>
           console.error("error parsing message", str, err)
         }
 
-        let callId
+        let callId, res
         try {
           callId = data.callId
-          const res = watchableStore[data.method](data.arg)
-          if (isPromise(res)) {
-            return res.then(
-              v => send({ callId, res: v }),
-              err => {
-                console.error("error responding to method call", err)
-                send({ callId, err: err.message })
-                throw err
-              }
-            )
-          } else {
-            send({ callId, res })
-          }
+          res = watchableStore[data.method](data.arg)
         } catch (err) {
           console.error("error responding to method call", err)
           send({ callId, err: err.message })
           throw err
+        }
+        if (isPromise(res)) {
+          return res.then(
+            v => send({ callId, res: v }),
+            err => {
+              console.error("error responding to method call", err)
+              send({ callId, err: err.message })
+              throw err
+            }
+          )
+        } else {
+          send({ callId, res })
         }
       })
       ws.on("close", () => {
