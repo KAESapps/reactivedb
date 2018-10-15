@@ -197,6 +197,8 @@ module.exports = store => {
       const [v1, v2] = Array.isArray(arg1) ? arg1 : [arg1, arg2]
       return v1 === v2
     },
+    isTruthy: v => !!v,
+    isFalsy: v => !v,
     startsWith: (arg1, arg2) => {
       return startsWith(arg1, arg2)
     },
