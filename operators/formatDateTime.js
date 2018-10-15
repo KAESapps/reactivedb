@@ -4,7 +4,7 @@ const assign = require("lodash/assign")
 // et le formate en date avec heure
 
 module.exports = (n, options) => {
-  if (!isString(n)) return
+  if (!n || !isString(n)) return
 
   return new Date(n).toLocaleString(
     "fr",
