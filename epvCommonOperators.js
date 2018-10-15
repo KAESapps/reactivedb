@@ -31,6 +31,7 @@ const updateWith = require("lodash/updateWith")
 const toNumber = require("lodash/toNumber")
 const padStart = require("lodash/padStart")
 const matchSorter = require("match-sorter")
+const localeIndexOf = require("locale-index-of")(Intl)
 const cartesian = require("cartesian")
 const obsMemoize = require("./obsMemoize")
 const formatInteger = require("./operators/formatInteger")
@@ -99,6 +100,18 @@ module.exports = store => {
     drop,
     count: arr => arr.length,
     contains: (arr, exp) => includes(arr, operators.query(exp)),
+    localeInsensitiveIndexOf: (string, substring) => {
+      if (
+        !string ||
+        !substring ||
+        typeof string !== "string" ||
+        typeof substring !== "string"
+      )
+        return -1
+      return localeIndexOf(string, substring, "fr", { sensitivity: "base" })
+    },
+    localeInsensitiveContains: (string, substring) =>
+      operators.localeInsensitiveIndexOf(string, substring) >= 0,
     ObjectKeys: o => Object.keys(o),
     reverse: arr => reverse(arr.slice()),
     toBoolean: v => !!v,

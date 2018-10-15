@@ -27,6 +27,7 @@
     "idb-keyval": "3.0.5",
     "idb-wrapper": "1.7.2",
     "ld-jsonstream": "1.0.0",
+    "locale-index-of": "1.0.2",
     "lodash": "4.17.4",
     "match-sorter": "2.3.0",
     "p-pipe": "1.2.0",
