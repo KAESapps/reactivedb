@@ -1,7 +1,23 @@
 const isFunction = require("lodash/isFunction")
+const each = require("lodash/each")
 const { Obs } = require("kobs")
 const unwatchDelay = 30 * 1000 // server unwatch is called if UI is not observing during 30 seconds
-
+const invalidQuery = new Error("invalid-query")
+const validateQuery = q => {
+  if (!q) throw invalidQuery
+  if (typeof q === "string") return
+  if (Array.isArray(q)) {
+    q.forEach(validateQuery)
+    return
+  }
+  if (typeof q === "object") {
+    each(q, v => {
+      if (v === undefined) throw invalidQuery
+    })
+    return
+  }
+  throw invalidQuery
+}
 module.exports = (rawClientArg, authenticatedUser) => {
   const queriesCache = new Map()
   const pendingUnwatch = new Map()
@@ -72,6 +88,8 @@ module.exports = (rawClientArg, authenticatedUser) => {
       )
       queriesCache.set(watchId, obs)
       // start watching server
+      if (!process.env.NODE_ENV || process.env.NODE_ENV === "dev")
+        validateQuery(arg)
       rawClient
         .watch({ watchId, method, arg }, value =>
           obs.set({ loaded: true, value })
