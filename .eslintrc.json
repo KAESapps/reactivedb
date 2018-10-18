@@ -24,8 +24,6 @@
     "no-console": "off"
   },
   "globals": {
-    "AndroidFullScreen": false,
-    "cordova": false,
     "process": false
   }
 }

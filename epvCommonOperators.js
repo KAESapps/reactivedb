@@ -53,6 +53,8 @@ module.exports = store => {
     }),
     entityRemovePatch: entityId =>
       store.createPatchToRemoveAllPropsOf(entityId),
+    entitiesRemovePatch: ids =>
+      fromPairs(map(ids, id => [id, operators.entityRemovePatch(id)])),
     entitiesMatching: function(arg1, arg2) {
       const filter = arguments.length === 2 ? arg2 : arg1
 
