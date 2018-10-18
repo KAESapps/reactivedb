@@ -102,6 +102,7 @@ module.exports = store => {
     drop,
     count: arr => arr.length,
     contains: (arr, exp) => includes(arr, operators.query(exp)),
+    containedIn: (v, arr) => includes(arr, v),
     localeInsensitiveIndexOf: (string, substring) => {
       if (
         !string ||
