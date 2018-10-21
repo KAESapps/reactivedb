@@ -97,6 +97,7 @@ module.exports = store => {
     minus: (v, exp) => v - operators.query(exp),
     divide: (v, exp) => v / operators.query(exp),
     multiply: (v, exp) => v * operators.query(exp),
+    modulo: (v, m) => v % m,
     take: (v, n) => (typeof v === "string" ? v.slice(0, n) : take(v, n)),
     takeEnd,
     drop,
