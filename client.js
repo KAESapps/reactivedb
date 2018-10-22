@@ -88,7 +88,10 @@ module.exports = (rawClientArg, authenticatedUser) => {
       )
       queriesCache.set(watchId, obs)
       // start watching server
-      if (!process.env.NODE_ENV || process.env.NODE_ENV === "dev")
+      if (
+        (!process.env.NODE_ENV || process.env.NODE_ENV === "dev") &&
+        method === "query"
+      )
         validateQuery(arg)
       rawClient
         .watch({ watchId, method, arg }, value =>
