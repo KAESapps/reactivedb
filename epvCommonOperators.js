@@ -245,6 +245,11 @@ module.exports = store => {
     formatNumber: (n, options) =>
       get(n, "toLocaleString") ? n.toLocaleString("fr", options) : "?",
     formatDate,
+    formatDecimal: (n, decimals) =>
+      operators.formatNumber(n, {
+        minimumFractionDigits: decimals || 2,
+        maximumFractionDigits: decimals || 2,
+      }),
     formatTime: (n, options) =>
       n ? new Date(n).toLocaleTimeString("fr", options) : "?",
     formatDateTime,
