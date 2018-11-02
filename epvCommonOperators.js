@@ -100,7 +100,7 @@ module.exports = store => {
       if (!exp && Array.isArray(v)) {
         return v.reduce((a, b) => a * b)
       }
-      v * operators.query(exp)
+      return v * operators.query(exp)
     },
     modulo: (v, m) => v % m,
     take: (v, n) => (typeof v === "string" ? v.slice(0, n) : take(v, n)),
