@@ -94,8 +94,8 @@ module.exports = store => {
     flatten,
     sum,
     plus: (v, exp) => v + operators.query(exp),
-    minus: (v, exp) => v - operators.query(exp),
-    divide: (v, exp) => v / operators.query(exp),
+    minus: (v, exp) => (exp ? v - operators.query(exp) : v[0] - v[1]),
+    divide: (v, exp) => (exp ? v / operators.query(exp) : v[0] / v[1]),
     multiply: (v, exp) => {
       if (!exp && Array.isArray(v)) {
         return v.reduce((a, b) => a * b)
