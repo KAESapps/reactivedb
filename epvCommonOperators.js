@@ -1,4 +1,5 @@
 const get = require("lodash/get")
+const merge = require("lodash/merge")
 const set = require("lodash/set")
 const sortBy = require("lodash/sortBy")
 const some = require("lodash/some")
@@ -189,6 +190,7 @@ module.exports = store => {
       const sources = operators.query(arg2 ? arg2 : arg1)
       return Object.assign.apply(null, concat(target, sources))
     },
+    merge: sources => merge({}, ...sources),
     each: (v, exps) => {
       let mapExp
       if (!exps) {
