@@ -5,5 +5,8 @@ const formatDecimal = require("reactivedb/operators/formatDecimal")
 module.exports = decimals => {
   const toFloat = int => int / Math.pow(10, decimals)
   const formatFloat = formatDecimal(decimals)
-  return v => formatFloat(toFloat(v))
+  return v => {
+    if (v == null) return null
+    return formatFloat(toFloat(v))
+  }
 }
