@@ -11,6 +11,11 @@ const isObjectLike = require("lodash/isObjectLike")
 const update = require("lodash/update")
 const without = require("lodash/without")
 
+const isValidPatch = patch =>
+  every(patch, (v, k) => {
+    return typeof k === "string" && k.length && typeof v === "object"
+  })
+
 const addToArray = v => a => {
   if (a) {
     a.push(v)
@@ -406,6 +411,10 @@ module.exports = epv => {
     getFromP_ev,
     getEntitiesMatching,
     patch: patch => {
+      if (!isValidPatch(patch)) {
+        console.error("invalidPatch", patch)
+        return
+      }
       transaction(() => {
         // const timeLabel = "patchPve"
         // console.log(timeLabel)
