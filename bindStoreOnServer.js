@@ -5,7 +5,13 @@ const isPromise = v => v && v.then
 module.exports = (store, wss) =>
   new Promise((resolve, reject) => {
     wss.on("connection", ws => {
-      let send = data => ws.send(JSON.stringify(data))
+      let send = data => {
+        try {
+          ws.send(JSON.stringify(data))
+        } catch (err) {
+          console.warn("error sending data to client", err)
+        }
+      }
       const watchableStore = watchable(store, send)
       ws.on("message", str => {
         let data
@@ -39,8 +45,6 @@ module.exports = (store, wss) =>
       })
       ws.on("close", () => {
         console.log("connection closed", ws.id)
-        send = data =>
-          console.log("data send when connection was already closed", data)
         watchableStore.destroy()
       })
     })
