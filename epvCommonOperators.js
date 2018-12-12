@@ -243,6 +243,17 @@ module.exports = store => {
       if (!branch) return value
       return operators.query([{ constant: value }].concat(branch))
     },
+    match: (value, args) => {
+      if (value === undefined) {
+        value = "null"
+      }
+      let branch = args[value]
+      if (!branch) {
+        branch = args["default"]
+      }
+      if (!branch) return value
+      return operators.query([{ constant: value }].concat(branch))
+    },
     formatInteger,
     formatNumber: (n, options) =>
       get(n, "toLocaleString") ? n.toLocaleString("fr", options) : "?",
