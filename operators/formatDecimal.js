@@ -2,10 +2,9 @@ const get = require("lodash/get")
 
 module.exports = opt => n => {
   const digits = opt || 3
-  return get(n, "toLocaleString")
-    ? n.toLocaleString("fr", {
-        maximumFractionDigits: digits,
-        minimumFractionDigits: digits,
-      })
-    : "?"
+  if (!get(n, "toLocaleString") || isNaN(n)) return "?"
+  return n.toLocaleString("fr", {
+    maximumFractionDigits: digits,
+    minimumFractionDigits: digits,
+  })
 }
