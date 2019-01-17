@@ -24,15 +24,16 @@
     "archiver": "3.0.0",
     "cartesian": "1.0.1",
     "fs-extra": "4.0.1",
-    "idb-keyval": "3.0.5",
+    "idb-keyval": "3.1.0",
     "idb-wrapper": "1.7.2",
-    "ld-jsonstream": "1.0.0",
+    "ld-jsonstream": "1.0.1",
     "locale-index-of": "1.0.2",
-    "lodash": "4.17.4",
+    "lodash": "4.17.11",
     "match-sorter": "2.3.0",
     "p-pipe": "1.2.0",
     "sanitize-filename": "1.6.1",
-    "shortid": "2.2.8"
+    "shortid": "2.2.14",
+    "date-fns": "1.30.1"
   },
   "prettier": {
     "trailingComma": "es5",

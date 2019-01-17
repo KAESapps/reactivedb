@@ -38,6 +38,9 @@ const obsMemoize = require("./obsMemoize")
 const formatInteger = require("./operators/formatInteger")
 const formatDate = require("./operators/formatDate")
 const formatDateTime = require("./operators/formatDateTime")
+const dateFormat = require("date-fns/format")
+const toLocalIsoString = isoString =>
+  isoString && dateFormat(new Date(isoString), "YYYY-MM-DDTHH:mm:ss.SSSZ")
 const log = fn => fn
 // const log = (fn, name) => (arg1, arg2) => {
 //   const timeName = `computing ${name}: ${arg1}, ${arg2}`
@@ -266,6 +269,7 @@ module.exports = store => {
     formatTime: (n, options) =>
       n ? new Date(n).toLocaleTimeString("fr", options) : "?",
     formatDateTime,
+    toLocalIsoString,
     formatBoolean: n => (n ? "OUI" : "NON"),
     formatCurrency: n =>
       get(n, "toLocaleString")
