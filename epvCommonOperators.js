@@ -39,8 +39,12 @@ const formatInteger = require("./operators/formatInteger")
 const formatDate = require("./operators/formatDate")
 const formatDateTime = require("./operators/formatDateTime")
 const dateFormat = require("date-fns/format")
-const toLocalIsoString = isoString =>
-  isoString && dateFormat(new Date(isoString), "YYYY-MM-DDTHH:mm:ss.SSSZ")
+const toLocalIsoString = (isoString, { Z = true, precision = "S" } = {}) =>
+  isoString &&
+  dateFormat(
+    new Date(isoString),
+    `YYYY-MM-DDTHH:mm:ss${precision === "S" ? ".SSS" : ""}${Z ? "Z" : ""}`
+  )
 const log = fn => fn
 // const log = (fn, name) => (arg1, arg2) => {
 //   const timeName = `computing ${name}: ${arg1}, ${arg2}`
