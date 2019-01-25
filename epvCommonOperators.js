@@ -43,7 +43,7 @@ const toLocalIsoString = (isoString, { Z = true, precision = "S" } = {}) =>
   isoString &&
   dateFormat(
     new Date(isoString),
-    `YYYY-MM-DDTHH:mm:ss${precision === "S" ? ".SSS" : ""}${Z ? "Z" : ""}`
+    `YYYY-MM-DDTHH:mm:ss${precision === "S" ? ".SSS" : ""}${Z ? "ZZ" : ""}`
   )
 const log = fn => fn
 // const log = (fn, name) => (arg1, arg2) => {
