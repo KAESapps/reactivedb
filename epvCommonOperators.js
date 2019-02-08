@@ -233,6 +233,7 @@ module.exports = store => {
     startsWith: (arg1, arg2) => {
       return startsWith(arg1, arg2)
     },
+    prepend: (v, exp) => [operators.query(exp), v],
     append: (v, exp) => [v, operators.query(exp)],
     union: ([s1, s2]) => s1.concat(s2),
     difference: ([s1, s2]) => {
