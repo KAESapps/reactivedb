@@ -14,6 +14,7 @@ const find = require("lodash/find")
 const map = require("lodash/map")
 const concat = require("lodash/concat")
 const mapValues = require("lodash/mapValues")
+const mapKeys = require("lodash/mapKeys")
 const reverse = require("lodash/reverse")
 const difference = require("lodash/difference")
 const intersection = require("lodash/intersection")
@@ -191,6 +192,8 @@ module.exports = store => {
     arrayToObject: arr => arr.reduce((acc, id) => set(acc, id, id), {}),
     mapObjectBy: (obj, exp) =>
       mapValues(obj, id => operators.query([{ constant: id }].concat(exp))),
+    mapKeysBy: (obj, exp) =>
+      mapKeys(obj, id => operators.query([{ constant: id }].concat(exp))),
     // assigne sur arg1 ou sur un objet vide, le ou les objets sources (soit un objet seul ou un array de sources)
     assign: (arg1, arg2) => {
       const target = arg2 ? arg1 : {}
