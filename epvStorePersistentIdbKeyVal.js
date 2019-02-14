@@ -89,6 +89,7 @@ const loadActiveStoreData = ({ db, stores }) => {
 const writePatch = (db, store, patch) => {
   const key = patchKey(store.name, store.patchesCount)
   store.patchesCount++
+  // return Promise.reject(new Error("fakePersistenceError")) // for test only
   return dbCall(db, set, key, patch)
 }
 const removeOldStores = (db, stores) =>
@@ -141,6 +142,7 @@ module.exports = pPipe([
   ),
   ({ db, data, stores }) => {
     const persisting = observable(0, "persisting")
+    const persistenceError = observable(false, "persistenceError")
     const memoryStore = epvStore(data)
 
     const patchAndSave = patch => {
@@ -148,13 +150,13 @@ module.exports = pPipe([
       memoryStore.patch(patch)
       // and then persist it
       persisting(persisting() + 1)
-      writePatch(db, stores.active, patch).then(() =>
-        persisting(persisting() - 1)
-      )
-      // pour les patchs suivant l'intialisation d'un nouveau store, tant que l'opération est encore en cours
+      writePatch(db, stores.active, patch)
+        .then(() => persisting(persisting() - 1))
+        .catch(persistenceError)
+      // pour les patchs suivant l'initialisation d'un nouveau store, tant que l'opération est encore en cours
       if (stores.initializing) {
         console.log("new store still initializing when writing patch")
-        writePatch(db, stores.initializing, patch)
+        writePatch(db, stores.initializing, patch).catch(persistenceError)
       }
       if (!stores.initializing && stores.active.patchesCount > maxPatches) {
         createNewStore(db, memoryStore.backup(), stores)
@@ -164,6 +166,7 @@ module.exports = pPipe([
       patch: patchAndSave,
       persisting,
       clearAllData: () => dbCall(db, clear),
+      persistenceError,
     })
   },
 ])
