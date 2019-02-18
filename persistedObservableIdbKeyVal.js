@@ -8,9 +8,10 @@ module.exports = (name, initValue) => {
   return get(name, store).then(value => {
     obs.set(value || initValue)
     const setAndPersist = newValue => {
-      set(name, newValue, store).catch(err =>
+      set(name, newValue, store).catch(err => {
         console.error("Error persisting value", err)
-      )
+        throw err
+      })
       obs.set(newValue)
     }
     return function(arg) {
