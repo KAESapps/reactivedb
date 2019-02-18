@@ -1,10 +1,10 @@
 const { observable } = require("kobs")
 const identity = require("lodash/identity")
 
-module.exports = (fn, name, hash = identity) => {
+module.exports = (fn, name, hash) => {
   const cache = new Map()
   return arg => {
-    const key = hash(arg)
+    const key = hash ? hash(arg) : arg
     let obs = cache.get(key)
     if (!obs) {
       const compute = fn(arg)

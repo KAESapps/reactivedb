@@ -44,7 +44,7 @@ const spy = fn => v => {
 
 const patchKey = (storeName, patchCount) =>
   storeName + "/" + padStart(patchCount, 5, "0")
-const maxPatches = 50
+const maxPatches = 200
 
 const createDb = (storeName, dbName) => new Store(dbName, storeName)
 const ensureInitStore = ({ keys, db }) => {
