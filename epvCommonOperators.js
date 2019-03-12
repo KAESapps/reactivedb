@@ -287,7 +287,10 @@ module.exports = store => {
           })
         : "?",
 
-    toNumber,
+    toDateTime: ([date, time]) => {
+      if (!date || !date.concat || !time) return
+      return date.concat("T", time)
+    },
     stringify: JSON.stringify,
 
     multiGroupBy: obsMemoize(
