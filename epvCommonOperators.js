@@ -286,7 +286,7 @@ module.exports = store => {
             maximumFractionDigits: 2,
           })
         : "?",
-
+    toNumber,
     toDateTime: ([date, time]) => {
       if (!date || !date.concat || !time) return
       return date.concat("T", time)
