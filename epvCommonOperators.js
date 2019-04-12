@@ -256,11 +256,23 @@ module.exports = store => {
     },
     match: (value, args) => {
       if (value === undefined) {
-        value = "null"
+        value = null
       }
       let branch = args[value]
       if (!branch) {
         branch = args["default"]
+      }
+      if (!branch) return value
+      return operators.query([{ constant: value }].concat(branch))
+    },
+    matchBy: (value, { cond, cases }) => {
+      if (value === undefined) {
+        value = null
+      }
+      const condValue = operators.query(concat({ constant: value }, cond))
+      let branch = cases[condValue]
+      if (!branch) {
+        branch = cases["default"]
       }
       if (!branch) return value
       return operators.query([{ constant: value }].concat(branch))
