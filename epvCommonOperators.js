@@ -156,6 +156,10 @@ module.exports = store => {
     isDefined: v => v != null,
     default: (value, defaultValue) => (value == null ? defaultValue : value),
     and: (value, exp) => value && operators.query(exp),
+    // à la différence de and, on fait une évaluation lazy, d'où l'api différente. C'est comme un each mais lazy, ou
+    or: (v, exps) => {
+      return exps.some(exp => operators.query([{ constant: v }].concat(exp)))
+    },
     defaultExp: (value, exp) => (value != null ? value : operators.query(exp)),
     groupBy: (arr, exp) => {
       return groupBy(arr, v => {
