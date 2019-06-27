@@ -178,7 +178,7 @@ module.exports = (dirPath, { writePatches = true } = {}) => {
           const entriesCount = keys.length
           // console.log("start", timeLabel, entriesCount, "entries")
           if (entriesCount == 0) {
-            console.warn("malformed patch", patch)
+            console.warn("empty patch")
           }
 
           let i = 0
@@ -191,7 +191,7 @@ module.exports = (dirPath, { writePatches = true } = {}) => {
               const props = Object.keys(entityPatch)
               const propsCount = props.length
               if (propsCount === 0) {
-                console.warn("malformed patch for entity", k1, patch)
+                console.warn("empty patch for entity", k1)
               }
               while (j < propsCount) {
                 const k2 = props[j]
