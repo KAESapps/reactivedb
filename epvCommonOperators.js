@@ -27,6 +27,7 @@ const drop = require("lodash/drop")
 const takeEnd = require("lodash/takeRight")
 const sum = require("lodash/sum")
 const round = require("lodash/round")
+const floor = require("lodash/floor")
 const zipObject = require("lodash/zipObject")
 const fromPairs = require("lodash/fromPairs")
 const updateWith = require("lodash/updateWith")
@@ -141,6 +142,7 @@ module.exports = store => {
     uniqueBy: (arr, exp) =>
       uniqBy(arr, v => operators.query(concat({ constant: v }, exp))),
     round,
+    floor,
     padStart: (s, arg) => {
       if (typeof arg === "number") return padStart(s, arg)
       return padStart(s, arg.length, arg.chars)
