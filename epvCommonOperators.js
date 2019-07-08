@@ -58,6 +58,7 @@ const log = fn => fn
 
 module.exports = store => {
   const operators = {
+    getPvOf: id => store.getFromE_pv(id),
     patchToRemoveAllPropsOf: id => ({
       [id]: store.createPatchToRemoveAllPropsOf(id),
     }),

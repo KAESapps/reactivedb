@@ -1,6 +1,7 @@
 const { transaction, Obs } = require("kobs") // on utilise Obs directement plutôt que observable car ça évite des closures inutiles, ça permet de bypasser le getter quand on n'a pas besoin de s'abonner à l'observable et de toute façon les observables ne sont pas exposés au public
 const isObservable = o => o && o.get
 const forEach = require("lodash/forEach")
+const mapValues = require("lodash/mapValues")
 const includes = require("lodash/includes")
 const pull = require("lodash/pull")
 const every = require("lodash/every")
@@ -314,15 +315,19 @@ module.exports = epv => {
     return pValue.get()
   }
   // retourne une liste non réactive des props d'une entité (pour le besoin de générer un patch pour la supprimer)
-  const createPatchToRemoveAllPropsOf = e => {
+  const getFromE_pv = e => {
     const ret = {}
     let eMap = epv.get(e)
     if (!eMap) return ret
     eMap.forEach((v, k) => {
       if (isObservable(v)) v = v.value
-      if (v != null) ret[k] = null
+      if (v != null) ret[k] = v
     })
     return ret
+  }
+  const createPatchToRemoveAllPropsOf = e => {
+    const pv = getFromE_pv(e)
+    return mapValues(pv, () => null)
   }
 
   // pour chaque p, crée un map d'observables de v -> [e]
@@ -405,6 +410,7 @@ module.exports = epv => {
     data: epv,
     backup,
     createPatchToRemoveAllPropsOf,
+    getFromE_pv, // à usage de dbAdmin seulement
     getFromEpv,
     getFromPve,
     getFromP_ve,
