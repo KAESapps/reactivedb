@@ -24,14 +24,14 @@ module.exports = (rawClientArg, authenticatedUser) => {
 
   let rawClient
 
-  let onCloseCb
+  let onDisconnectCb
 
   const onNewRawClient = function(newClient) {
     newClient.timestamp = new Date()
     console.log("new raw client ", newClient, newClient.timestamp)
     // reconnect
     rawClient = newClient
-    onCloseCb && rawClient.onClose(onCloseCb)
+    onDisconnectCb && rawClient.onDisconnect(onDisconnectCb)
     // relaunch watched queries
     queriesCache.forEach((obs, watchId) => {
       const { method, arg } = JSON.parse(watchId)
@@ -53,9 +53,9 @@ module.exports = (rawClientArg, authenticatedUser) => {
     onNewRawClient(rawClientArg)
   }
 
-  const onClose = cb => {
-    onCloseCb = cb
-    rawClient.onClose(cb)
+  const onDisconnect = cb => {
+    onDisconnectCb = cb
+    rawClient.onDisconnect(cb)
   }
 
   const watch = (method, arg) => {
@@ -115,7 +115,7 @@ module.exports = (rawClientArg, authenticatedUser) => {
     watch,
     clearLocalData: () => rawClient.call("clearLocalData"),
     close: proxyRawMethod("close"),
-    onClose,
+    onDisconnect,
     query: q => watch("query", q),
     queryOnce: proxyRawMethod("query"),
     patch: proxyRawMethod("patch"),

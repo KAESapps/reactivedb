@@ -57,7 +57,11 @@ module.exports = ws => {
     ws.close()
     //TODO: vider les registres ?
   }
-  const onClose = cb => (ws.onclose = cb)
+  const onDisconnect = cb => {
+    ws.onclose = err => {
+      if (!err.wasClean) cb()
+    }
+  }
 
-  return { watch, unwatch, query, call, patch, close, onClose }
+  return { watch, unwatch, query, call, patch, close, onDisconnect }
 }

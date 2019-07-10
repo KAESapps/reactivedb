@@ -4,7 +4,18 @@ const isPromise = v => v && v.then
 // create a watchable store from store and expose it on a ws server
 module.exports = (store, wss) =>
   new Promise((resolve, reject) => {
-    wss.on("connection", ws => {
+    const logConnectedUsers = () => {
+      console.log(
+        `${wss.clients.size} connected user(s) : ${Array.from(wss.clients).map(
+          ws => ws.userName
+        )}`
+      )
+    }
+    wss.on("connection", (ws, req) => {
+      const userName = req.credentials.name
+      ws.userName = userName
+      console.log("new ws connection for user", userName)
+      logConnectedUsers()
       let send = data => {
         try {
           ws.send(JSON.stringify(data))
@@ -43,8 +54,10 @@ module.exports = (store, wss) =>
           send({ callId, res })
         }
       })
-      ws.on("close", () => {
-        console.log("connection closed", ws.id)
+      ws.on("close", code => {
+        const closedByUser = code == 1005
+        console.log("connection closed for user", userName, { closedByUser })
+        logConnectedUsers()
         watchableStore.destroy()
       })
     })

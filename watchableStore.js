@@ -16,7 +16,8 @@ module.exports = (store, send) => {
         } else {
           value = store[method](arg)
         }
-        if (value !== previousValue) { // prevent sending value if it is the same as before
+        if (value !== previousValue) {
+          // prevent sending value if it is the same as before
           previousValue = value
           send({ watchId, value })
         }
@@ -26,13 +27,18 @@ module.exports = (store, send) => {
     return "done"
   }
   const unwatch = ({ watchId }) => {
-    unwatchs.get(watchId)()
+    const unwatch = unwatchs.get(watchId)
+    if (!unwatch) {
+      console.warn("no watchable store with this id", watchId)
+      return
+    }
     // console.log("stop watching", watchId)
+    unwatch()
     return "done"
   }
   const destroy = () => {
     unwatchs.forEach(unwatch => unwatch())
-    console.log("watchable store destroyed")
+    // console.log("watchable store destroyed")
     return "done"
   }
 
