@@ -27,8 +27,8 @@ module.exports = (rawClientArg, authenticatedUser) => {
   let onDisconnectCb
 
   const onNewRawClient = function(newClient) {
-    newClient.timestamp = new Date()
-    console.log("new raw client ", newClient, newClient.timestamp)
+    rawClient && rawClient.close && rawClient.close() //normalement rawClient est déconnecté mais par sécurité
+    console.log("new raw client ", newClient.timestamp)
     // reconnect
     rawClient = newClient
     onDisconnectCb && rawClient.onDisconnect(onDisconnectCb)

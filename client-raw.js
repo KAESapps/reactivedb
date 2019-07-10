@@ -1,10 +1,12 @@
 const shortid = require("shortid")
 
 module.exports = ws => {
+  const timestamp = Date.now() // pour du debug
   const resolvers = new Map()
   const listeners = new Map()
 
   ws.onmessage = message => {
+    // console.debug("raw client message", timestamp)
     const data = JSON.parse(message.data)
     // console.log("message received", data)
     if (data.callId) {
@@ -63,5 +65,5 @@ module.exports = ws => {
     }
   }
 
-  return { watch, unwatch, query, call, patch, close, onDisconnect }
+  return { watch, unwatch, query, call, patch, close, onDisconnect, timestamp }
 }
