@@ -218,6 +218,22 @@ module.exports = store => {
       }
       return (Array.isArray(exps) ? map : mapValues)(exps, mapExp)
     },
+    // retourne le premier résultat non null
+    // c'est comme un each mais qui retourne le premier résultat non null... ou sinon la valeur d'origine
+    firstDefined: (v, exps) => {
+      let mapExp
+      if (!exps) {
+        exps = v
+        mapExp = exp => operators.query(exp)
+      } else {
+        mapExp = exp => operators.query([{ constant: v }].concat(exp))
+      }
+      for (var i = 0; i < exps.length; i++) {
+        let res = mapExp(exps[i])
+        if (res != null) return res
+      }
+      return v
+    },
     gte: (arg1, arg2) => {
       const [v1, v2] = Array.isArray(arg1) ? arg1 : [arg1, arg2]
       return v1 >= v2
