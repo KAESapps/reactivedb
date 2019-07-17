@@ -1,21 +1,19 @@
 const { observable } = require("kobs")
-const identity = require("lodash/identity")
+const isString = require("lodash/isString")
+const debug = !!process.env
+const log = (fn, name) => () => {
+  const timeName = `computing ${name}`
+  console.time(timeName)
+  const res = fn()
+  console.timeEnd(timeName)
+  return res
+}
 
-// const has = (map, key1, key2) => {
-//   if (!map.has(key1)) return false
-//   const subMap = map.get(key1)
-//   return subMap.has(key2)
-// }
 const get = (map, key1, key2) => {
   const subMap = map.get(key1)
   if (!subMap) return subMap
   return subMap.get(key2)
 }
-// const del = (map, key1, key2) => {
-//   const subMap = map.get(key1)
-//   if (!subMap) return console.warn(key1, 'does not exists in', map)
-//   return subMap.delete(key2)
-// }
 const set = (map, key1, key2, v) => {
   let subMap
   if (map.has(key1)) {
@@ -27,15 +25,16 @@ const set = (map, key1, key2, v) => {
   return subMap.set(key2, v)
 }
 
-module.exports = (fn, name, hash1 = identity, hash2 = identity) => {
+module.exports = (fn, name, hash1, hash2) => {
   const cache = new Map()
   return (arg1, arg2) => {
-    const key1 = hash1(arg1)
-    const key2 = hash2(arg2)
+    const key1 = isString(arg1) ? arg1 : hash1 ? hash1(arg1) : JSON.stringify
+    const key2 = isString(arg2) ? arg2 : hash2 ? hash1(arg2) : JSON.stringify
     let obs = get(cache, key1, key2)
     if (!obs) {
-      const compute = fn(arg1, arg2)
-      obs = observable(compute, `${name}/${key1}-${key2}`)
+      const debugKey = debug && name ? `${name}/${key1}-${key2}` : undefined
+      const compute = debugKey ? log(fn(arg1, arg2), debugKey) : fn(arg1, arg2)
+      obs = observable(compute, debugKey)
       set(cache, key1, key2, obs)
     }
     return obs()
