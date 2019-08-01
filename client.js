@@ -1,7 +1,8 @@
 const isFunction = require("lodash/isFunction")
+const get = require("lodash/get")
 const each = require("lodash/each")
 const { Obs } = require("kobs")
-const unwatchDelay = 30 * 1000 // server unwatch is called if UI is not observing during 30 seconds
+const unwatchDelay = 1000 * 60 * 2 // server unwatch is called if UI is not observing during 2 minutes
 const invalidQuery = new Error("invalid-query")
 const validateQuery = q => {
   if (!q) throw invalidQuery
@@ -18,6 +19,19 @@ const validateQuery = q => {
   }
   throw invalidQuery
 }
+const startWatching = (rawClient, watchId, method, arg, obs) => {
+  rawClient
+    .watch({ watchId, method, arg }, value => {
+      if (value !== get(obs, "value.value")) {
+        // évite de déclencher si la valeur reste identique (normalement c'est déjà filtré par le serveur mais c'est utile à la reconnection)
+        obs.set({ loaded: true, value })
+      }
+    })
+    .catch(err => {
+      console.error("Error starting to watch", arg, err)
+    })
+}
+
 module.exports = (rawClientArg, authenticatedUser) => {
   const queriesCache = new Map()
   const pendingUnwatch = new Map()
@@ -35,13 +49,7 @@ module.exports = (rawClientArg, authenticatedUser) => {
     // relaunch watched queries
     queriesCache.forEach((obs, watchId) => {
       const { method, arg } = JSON.parse(watchId)
-      rawClient
-        .watch({ watchId, method, arg }, value =>
-          obs.set({ loaded: true, value })
-        )
-        .catch(err => {
-          console.error("Error starting to watch", arg, err)
-        })
+      startWatching(rawClient, watchId, method, arg, obs)
     })
   }
 
@@ -91,15 +99,10 @@ module.exports = (rawClientArg, authenticatedUser) => {
       if (
         (!process.env.NODE_ENV || process.env.NODE_ENV === "dev") &&
         method === "query"
-      )
+      ) {
         validateQuery(arg)
-      rawClient
-        .watch({ watchId, method, arg }, value =>
-          obs.set({ loaded: true, value })
-        )
-        .catch(err => {
-          console.error("Error starting to watch", arg, err)
-        })
+      }
+      startWatching(rawClient, watchId, method, arg, obs)
     }
     return obs.get()
   }
