@@ -40,7 +40,7 @@ module.exports = (dirPath, { writePatches = true } = {}) => {
               const rs = fs.createReadStream(statePath, {
                 encoding: "utf8",
               })
-              const ls = new LDJSONStream()
+              const ls = new LDJSONStream({ objectMode: true })
               rs.pipe(ls)
               ls.on("data", ([k1, k2, value]) => {
                 set(data, k1, k2, value)
