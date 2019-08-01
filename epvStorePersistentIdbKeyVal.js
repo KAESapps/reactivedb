@@ -129,7 +129,7 @@ const createNewStore = (db, data, stores) => {
 //db is idbStore
 // store is a virtual store with state and patches
 // expect to be called wtih dbName
-module.exports = pPipe([
+module.exports = pPipe(
   (dbName, storeName) => createDb(dbName, storeName),
   ctxAssign("db"),
   ctxAssign("keys", ({ db }) => dbCall(db, keys)),
@@ -168,5 +168,5 @@ module.exports = pPipe([
       clearAllData: () => dbCall(db, clear),
       persistenceError,
     })
-  },
-])
+  }
+)

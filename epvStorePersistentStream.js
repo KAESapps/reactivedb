@@ -1,5 +1,4 @@
 const archive = require("./archive")
-const util = require("util")
 const fs = require("fs-extra")
 const path = require("path")
 const sanitizeFilename = require("sanitize-filename")
