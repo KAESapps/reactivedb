@@ -13,14 +13,14 @@ const getObject = (exports.get = (store, k1, k2) => {
   return v2 == null ? null : v2
 })
 
-exports.set = (store, k1, k2, v) => {
+const set = (exports.set = (store, k1, k2, v) => {
   let v1 = store.get(k1)
   if (!v1) {
     v1 = new Map()
     store.set(k1, v1)
   }
   v1.set(k2, v)
-}
+})
 const setObject = (exports.setObject = (store, k1, k2, v) => {
   let v1 = store[k1]
   if (!v1) {
@@ -130,3 +130,19 @@ const tripletsToKkv = (exports.tripletsToKkv = (triplets, kkv) => {
   })
   return kkv
 })
+
+exports.setFromStream = (store, kkvStream) => {
+  return new Promise((resolve, reject) => {
+    let rowsCount = 0
+    kkvStream.on("data", data => {
+      if (!Array.isArray(data)) return //ignore non kkv entries
+      const [e, p, v] = data
+      set(store, e, p, v)
+      rowsCount++
+    })
+    kkvStream.on("end", () => {
+      resolve(rowsCount)
+    })
+    kkvStream.on("error", reject)
+  })
+}

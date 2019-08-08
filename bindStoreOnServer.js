@@ -1,3 +1,4 @@
+const get = require("lodash/get")
 const watchable = require("./watchableStore")
 const isPromise = v => v && v.then
 
@@ -12,8 +13,10 @@ module.exports = (store, wss) =>
       )
     }
     wss.on("connection", (ws, req) => {
-      const userName = req.credentials.name
+      const userName = get(req, "credentials.name")
       ws.userName = userName
+      const userId = req.userId
+      ws.userId = userId
       console.log("new ws connection for user", userName)
       logConnectedUsers()
       let send = data => {
@@ -35,7 +38,7 @@ module.exports = (store, wss) =>
         let callId, res
         try {
           callId = data.callId
-          res = watchableStore[data.method](data.arg)
+          res = watchableStore[data.method](data.arg, { user: userId })
         } catch (err) {
           console.error("error responding to method call", err)
           send({ callId, err: err.message })
@@ -43,6 +46,7 @@ module.exports = (store, wss) =>
         }
         if (isPromise(res)) {
           return res.then(
+            //est-ce que le "return" est utile ?
             v => send({ callId, res: v }),
             err => {
               console.error("error responding to method call", err)
