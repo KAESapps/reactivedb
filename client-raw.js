@@ -1,19 +1,17 @@
 const shortid = require("shortid")
 
-module.exports = ws => {
+module.exports = conn => {
   const timestamp = Date.now() // pour du debug
   const resolvers = new Map()
   const listeners = new Map()
 
-  ws.onmessage = message => {
+  conn.onmessage(data => {
     // console.debug("raw client message", timestamp)
-    const data = JSON.parse(message.data)
-    // console.log("message received", data)
     if (data.callId) {
       const resolver = resolvers.get(data.callId)
       resolvers.delete(data.callId)
       if (!resolver) {
-        return console.error("no handler for message", message)
+        return console.error("no handler for message", data)
       }
       if (data.err) {
         return resolver.reject(data.err)
@@ -24,46 +22,65 @@ module.exports = ws => {
     if (data.watchId) {
       const listener = listeners.get(data.watchId)
       if (!listener) {
-        return console.error("no listener for message", message)
+        return console.error("no listener for message", data)
       }
       return listener(data.value)
     }
-  }
+  })
 
   const call = (method, arg) =>
     new Promise((resolve, reject) => {
       const callId = shortid.generate()
       resolvers.set(callId, { resolve, reject })
-      ws.send(
-        JSON.stringify({
-          callId,
-          method,
-          arg,
-        })
-      )
+      conn.send({
+        callId,
+        method,
+        arg,
+      })
     })
 
   const patch = p => call("patch", p)
   const query = p => call("query", p)
+  const query2 = p => call("query2", p)
 
   const watch = (arg, listener) => {
     listeners.set(arg.watchId, listener)
     return call("watch", arg)
   }
+  const watch2 = (arg, listener) => {
+    listeners.set(arg.watchId, listener)
+    return call("watch2", arg)
+  }
   const unwatch = arg => {
     listeners.delete(arg.watchId)
     return call("unwatch", arg)
   }
+  const unwatch2 = arg => {
+    listeners.delete(arg.watchId)
+    return call("unwatch2", arg)
+  }
 
   const close = () => {
-    ws.close()
+    conn.close()
     //TODO: vider les registres ?
   }
   const onDisconnect = cb => {
-    ws.onclose = err => {
+    conn.onclose = err => {
       if (!err.wasClean) cb()
     }
   }
 
-  return { watch, unwatch, query, call, patch, close, onDisconnect, timestamp }
+  return {
+    watch,
+    watch2,
+    unwatch,
+    unwatch2,
+    query,
+    query2,
+    call,
+    patch,
+    close,
+    onDisconnect,
+    timestamp,
+  }
 }

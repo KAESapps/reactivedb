@@ -1,4 +1,6 @@
 const forEach = require("lodash/forEach")
+const fs = require("fs")
+const LDJSONStream = require("ld-jsonstream")
 
 exports.get = (store, k1, k2) => {
   const v1 = store.get(k1)
@@ -131,18 +133,28 @@ const tripletsToKkv = (exports.tripletsToKkv = (triplets, kkv) => {
   return kkv
 })
 
-exports.setFromStream = (store, kkvStream) => {
+const setFromStream = (exports.setFromStream = (store, kkvStream) => {
   return new Promise((resolve, reject) => {
-    let rowsCount = 0
+    let rowsRead = 0
     kkvStream.on("data", data => {
       if (!Array.isArray(data)) return //ignore non kkv entries
       const [e, p, v] = data
       set(store, e, p, v)
-      rowsCount++
+      rowsRead++
     })
     kkvStream.on("end", () => {
-      resolve(rowsCount)
+      resolve({ rowsRead, bytesRead: kkvStream.bytesRead })
     })
     kkvStream.on("error", reject)
   })
+})
+
+exports.loadFromFile = (store, path, start) => {
+  const kkvStream = fs
+    .createReadStream(path, {
+      encoding: "utf8",
+      start,
+    })
+    .pipe(new LDJSONStream({ objectMode: true }))
+  return setFromStream(store, kkvStream)
 }

@@ -46,5 +46,10 @@ module.exports = (store, send) => {
     watch,
     unwatch,
     destroy,
+    watch2: arg => {
+      return store.watch2(arg, value => {
+        send({ watchId: arg.watchId, value })
+      })
+    },
   })
 }

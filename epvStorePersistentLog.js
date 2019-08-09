@@ -2,8 +2,7 @@ const fs = require("fs-extra")
 const path = require("path")
 const create = require("lodash/create")
 const epvStore = require("./epvStore")
-const { setFromStream } = require("./kkvHelpers")
-const LDJSONStream = require("ld-jsonstream")
+const { loadFromFile } = require("./kkvHelpers")
 const streamOfStreams = require("./streamOfStreams")
 const Readable = require("stream").Readable
 const gracefulExit = require("./gracefulExit")
@@ -20,7 +19,7 @@ const monitor = (timeLabel, task) => () => {
   })
 }
 
-module.exports = (dirPath, { withReplica = false } = {}) => {
+module.exports = dirPath => {
   // auto load
   const data = new Map()
   let lastStateSeq = null
@@ -48,13 +47,8 @@ module.exports = (dirPath, { withReplica = false } = {}) => {
       monitor("read last state file", () => {
         if (lastStateSeq == null) return Promise.resolve() // aucun state à charger (attention lastStateSeq peut être à 0)
         const lastStatePath = path.join(statesPath, lastStateSeq + ".jsonl")
-        const kkvStream = fs
-          .createReadStream(lastStatePath, {
-            encoding: "utf8",
-          })
-          .pipe(new LDJSONStream({ objectMode: true }))
-        return setFromStream(data, kkvStream).then(count => {
-          log(`${count} rows in state file`)
+        return loadFromFile(data, lastStatePath).then(({ rowsRead }) => {
+          log(`${rowsRead} rows in state file`)
         })
       })
     )
@@ -69,16 +63,12 @@ module.exports = (dirPath, { withReplica = false } = {}) => {
               throw new Error("noLogFile")
             }
           }
-          const kkvStream = fs
-            .createReadStream(logPath, {
-              encoding: "utf8",
-              start: lastStateSeq || 0,
-            })
-            .pipe(new LDJSONStream({ objectMode: true }))
-          return setFromStream(data, kkvStream).then(count => {
-            log(`${count} rows in log file since ${lastStateSeq}`)
-            lastLogSeq = (lastStateSeq || 0) + kkvStream.bytesRead
-          })
+          return loadFromFile(data, logPath, lastStateSeq || 0).then(
+            ({ rowsRead, bytesRead }) => {
+              log(`${rowsRead} rows in log file since ${lastStateSeq}`)
+              lastLogSeq = (lastStateSeq || 0) + bytesRead
+            }
+          )
         })
       })
     )
