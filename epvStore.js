@@ -1,3 +1,4 @@
+const log = require("./log")
 const { transaction, Obs } = require("kobs") // on utilise Obs directement plutôt que observable car ça évite des closures inutiles, ça permet de bypasser le getter quand on n'a pas besoin de s'abonner à l'observable et de toute façon les observables ne sont pas exposés au public
 const isObservable = o => o && o.get
 const forEach = require("lodash/forEach")
@@ -46,8 +47,7 @@ const updatePvePatch = (pvePatch, { prop, value, addRemove, entity }) => {
 
 // crée un index (map) avec un observable des entités par valeur existante de "prop"
 const getObservablesOfEntitiesGroupedByValue = (epv, prop) => {
-  const timeLabel = `createIndexOfEntitites for prop ${prop}`
-  console.time(timeLabel)
+  const start = Date.now()
 
   const pMap = new Map()
   epv.forEach((e, k) => {
@@ -64,7 +64,9 @@ const getObservablesOfEntitiesGroupedByValue = (epv, prop) => {
     }
   })
 
-  console.timeEnd(timeLabel)
+  log.debug(
+    `createIndexOfEntitites for prop ${prop} in ${Date.now() - start}ms`
+  )
   return pMap
 }
 

@@ -9,12 +9,13 @@ const LDJSONStream = require("ld-jsonstream")
 const streamOfStreams = require("./streamOfStreams")
 const Readable = require("stream").Readable
 const gracefulExit = require("./gracefulExit")
+const log = require("./log").sub("epvPersistentStream")
 
 const monitor = (timeLabel, task) => () => {
-  console.log("start", timeLabel)
-  console.time(timeLabel)
+  log.debug("start", timeLabel)
+  const startTime = Date.now()
   return task().then(res => {
-    console.timeEnd(timeLabel)
+    log.info(timeLabel, `in ${Date.now() - startTime} ms`)
     return res
   })
 }
@@ -47,7 +48,7 @@ module.exports = (dirPath, { writePatches = true } = {}) => {
                 rowsCount++
               })
               ls.on("end", () => {
-                console.log(rowsCount, "rows in state file")
+                log(rowsCount, "rows in state file")
                 resolve()
               })
               ls.on("error", reject)
@@ -78,7 +79,7 @@ module.exports = (dirPath, { writePatches = true } = {}) => {
                   : set(data, k1, k2, value)
               })
               ls.on("end", () => {
-                console.log(rowsCount, "rows in delta file")
+                log(rowsCount, "rows in delta file")
                 if (!rowsCount) noDeltaEntries = true
                 resolve()
               })
@@ -126,7 +127,7 @@ module.exports = (dirPath, { writePatches = true } = {}) => {
 
         return new Promise((resolve, reject) => {
           ws.once("finish", () => {
-            console.log(count, "entries in current state")
+            log(count, "entries in current state")
             resolve()
           })
           ws.on("error", reject)
@@ -137,19 +138,17 @@ module.exports = (dirPath, { writePatches = true } = {}) => {
     .then(() => {
       const store = epvStore(data)
       // auto save
-      console.log("enabling auto-save")
+      log.debug("enabling auto-save")
 
       // on ouvre une stream en écriture sur le fichier delta qui doit être vide
       const ws = fs.createWriteStream(deltaPath)
-      ws.on("error", err =>
-        console.error("Erreur de sauvegarde des données", err)
-      )
+      ws.on("error", err => log.error("Erreur de sauvegarde des données", err))
 
       const rss = streamOfStreams()
       rss.pipe(ws)
 
       gracefulExit(() => {
-        console.log("Finish writing delta file before exit...")
+        log.warn("Finish writing delta file before exit...")
         const promise = new Promise(resolve => ws.on("finish", resolve))
         rss.end()
         return promise
@@ -177,7 +176,7 @@ module.exports = (dirPath, { writePatches = true } = {}) => {
           const entriesCount = keys.length
           // console.log("start", timeLabel, entriesCount, "entries")
           if (entriesCount == 0) {
-            console.warn("empty patch")
+            log.warn("empty patch")
           }
 
           let i = 0
@@ -190,7 +189,7 @@ module.exports = (dirPath, { writePatches = true } = {}) => {
               const props = Object.keys(entityPatch)
               const propsCount = props.length
               if (propsCount === 0) {
-                console.warn("empty patch for entity", k1)
+                log.warn("empty patch for entity", k1)
               }
               while (j < propsCount) {
                 const k2 = props[j]
