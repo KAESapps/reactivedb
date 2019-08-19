@@ -27,7 +27,7 @@
     "fs-extra": "8.1.0",
     "idb-keyval": "3.2.0",
     "idb-wrapper": "1.7.2",
-    "klogs": "github:KAESapps/klogs",
+    "klogs": "github:KAESapps/klogs#6d23fc663cc30caf7b52c12ce1034e480035d7f3",
     "ld-jsonstream": "2.0.2",
     "locale-index-of": "1.0.5",
     "lodash": "4.17.15",
