@@ -1,5 +1,7 @@
 var fs = require("fs")
 var archiver = require("archiver")
+const log = require("./log").sub("archive")
+
 module.exports = (source, destination) =>
   new Promise((resolve, reject) => {
     var output = fs.createWriteStream(destination)
@@ -7,17 +9,17 @@ module.exports = (source, destination) =>
       zlib: { level: 9 }, // Sets the compression level.
     })
     output.on("close", function() {
-      console.log(archive.pointer() + " total bytes")
-      console.log("success archiving", destination)
+      log.debug(archive.pointer() + " total bytes")
+      log.debug("success archiving", destination)
       resolve()
     })
     output.on("end", function() {
-      console.log("Data has been drained")
+      log.debug("Data has been drained")
     })
     archive.on("warning", function(err) {
       if (err.code === "ENOENT") {
         // log warning
-        console.warn(err)
+        log.warn(err)
       } else {
         // throw error
         reject(err)

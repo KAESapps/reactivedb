@@ -15,7 +15,7 @@ const monitor = (timeLabel, task) => () => {
   log.debug("start", timeLabel)
   const startTime = Date.now()
   return task().then(res => {
-    log.info(timeLabel, `in ${Date.now() - startTime} ms`)
+    log.debug(timeLabel, `in ${Date.now() - startTime} ms`)
     return res
   })
 }
@@ -48,7 +48,7 @@ module.exports = (dirPath, { writePatches = true } = {}) => {
                 rowsCount++
               })
               ls.on("end", () => {
-                log(rowsCount, "rows in state file")
+                log("state file loaded", { rowsCount })
                 resolve()
               })
               ls.on("error", reject)
@@ -79,7 +79,7 @@ module.exports = (dirPath, { writePatches = true } = {}) => {
                   : set(data, k1, k2, value)
               })
               ls.on("end", () => {
-                log(rowsCount, "rows in delta file")
+                log("delta file loaded", { rowsCount })
                 if (!rowsCount) noDeltaEntries = true
                 resolve()
               })
@@ -127,7 +127,7 @@ module.exports = (dirPath, { writePatches = true } = {}) => {
 
         return new Promise((resolve, reject) => {
           ws.once("finish", () => {
-            log(count, "entries in current state")
+            log("new state file saved", { entries: count })
             resolve()
           })
           ws.on("error", reject)
