@@ -9,6 +9,7 @@ const LDJSONStream = require("ld-jsonstream")
 const streamOfStreams = require("./streamOfStreams")
 const Readable = require("stream").Readable
 const gracefulExit = require("./gracefulExit")
+const pRetry = require("p-retry")
 const log = require("./log").sub("epvPersistentStream")
 
 const monitor = (timeLabel, task) => () => {
@@ -104,7 +105,7 @@ module.exports = (dirPath, { writePatches = true } = {}) => {
         ).then(() => fs.remove(currentPath))
       })
     )
-    .then(() => fs.ensureFile(statePath))
+    .then(() => pRetry(() => fs.ensureFile(statePath))) // parfois (sur windows, on a une erreur "EPERM: operation not permitted" et il faut attendre un peu
     .then(
       // save current state (only if there was delta entries)
       monitor("save current state", () => {

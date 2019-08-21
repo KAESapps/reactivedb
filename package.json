@@ -33,6 +33,7 @@
     "lodash": "4.17.15",
     "match-sorter": "4.0.1",
     "p-pipe": "3.0.0",
+    "p-retry": "4.1.0",
     "sanitize-filename": "1.6.2",
     "shortid": "2.2.14"
   },
