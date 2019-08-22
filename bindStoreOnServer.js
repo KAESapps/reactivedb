@@ -8,7 +8,7 @@ module.exports = (store, wss) =>
   new Promise((resolve, reject) => {
     const logConnectedUsers = () => {
       const names = Array.from(wss.clients).map(ws => ws.userName)
-      log.info("connected users", { count: names.length, names })
+      log.info("userConnectionsChanged", { count: names.length, names })
     }
     wss.on("connection", (ws, req) => {
       const userName = get(req, "credentials.name")
