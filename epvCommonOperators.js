@@ -38,6 +38,7 @@ const localeIndexOf = require("locale-index-of")(Intl)
 const cartesian = require("cartesian")
 const obsMemoize = require("./obsMemoize")
 const formatInteger = require("./operators/formatInteger")
+const formatDecimal = require("./operators/formatDecimal")
 const formatDate = require("./operators/formatDate")
 const formatDateTime = require("./operators/formatDateTime")
 const dateFormat = require("date-fns/format")
@@ -304,11 +305,7 @@ module.exports = store => {
     formatNumber: (n, options) =>
       get(n, "toLocaleString") ? n.toLocaleString("fr", options) : "?",
     formatDate,
-    formatDecimal: (n, decimals) =>
-      operators.formatNumber(n, {
-        minimumFractionDigits: decimals || 2,
-        maximumFractionDigits: decimals || 2,
-      }),
+    formatDecimal: (n, decimals) => formatDecimal(decimals)(n),
     formatTime: (n, options) =>
       n ? new Date(n).toLocaleTimeString("fr", options) : "?",
     formatDateTime,
