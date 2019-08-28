@@ -1,3 +1,4 @@
+const log = require("./log").sub("storeIdbKeyVal")
 const pPipe = require("p-pipe")
 const ctxAssign = (variable, fn) => ctx => {
   if (!fn) return { [variable]: ctx }
@@ -25,15 +26,6 @@ const dbCall = (db, method, arg1, arg2) => {
   return method.apply(null, compact([arg1, arg2, db])).then(res => {
     // console.timeEnd(callName)
     // console.log("done", callName, res)
-    return res
-  })
-}
-const monitor = (callName, fn) => v => {
-  console.log("starting", callName)
-  console.time(callName)
-  return fn(v).then(res => {
-    console.timeEnd(callName)
-    console.log("done", callName, res)
     return res
   })
 }
@@ -135,10 +127,12 @@ module.exports = pPipe(
   ctxAssign("keys", ({ db }) => dbCall(db, keys)),
   ctxAssign("keys", ensureInitStore),
   ctxAssign("stores", loadStoresMetaData),
-  ctxAssign("data", monitor("dataLoading", loadActiveStoreData)),
-  spy(
-    ({ data, stores }) =>
-      `${data.length} entities loaded from store ${stores.active.name}`
+  ctxAssign("data", loadActiveStoreData),
+  spy(({ data, stores }) =>
+    log("entities loaded from store", {
+      count: data.length,
+      storeName: stores.active.name,
+    })
   ),
   ({ db, data, stores }) => {
     const persisting = observable(0, "persisting")
@@ -155,7 +149,7 @@ module.exports = pPipe(
         .catch(persistenceError)
       // pour les patchs suivant l'initialisation d'un nouveau store, tant que l'opération est encore en cours
       if (stores.initializing) {
-        console.log("new store still initializing when writing patch")
+        log.debug("new store still initializing when writing patch")
         writePatch(db, stores.initializing, patch).catch(persistenceError)
       }
       if (!stores.initializing && stores.active.patchesCount > maxPatches) {
