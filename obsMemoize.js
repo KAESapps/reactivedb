@@ -3,10 +3,10 @@ const isString = require("lodash/isString")
 const isDev = !process.env.NODE_ENV || process.env.NODE_ENV === "dev"
 const log = require("./log").sub("obsMemoize")
 const trackTime = (fn, name) => () => {
-  const startTime = performance.now()
+  const startTime = Date.now()
   // log.debug('start computing', {name})
   const res = fn()
-  const duration = performance.now() - startTime
+  const duration = Date.now() - startTime
   log.debug("computing done", { name, duration })
   return res
 }
