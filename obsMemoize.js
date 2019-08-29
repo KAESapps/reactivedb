@@ -1,11 +1,13 @@
 const { observable } = require("kobs")
 const isString = require("lodash/isString")
-const debug = !!process.env
-const log = (fn, name) => () => {
-  const timeName = `computing ${name}`
-  console.time(timeName)
+const isDev = !process.env.NODE_ENV || process.env.NODE_ENV === "dev"
+const log = require("./log").sub("obsMemoize")
+const trackTime = (fn, name) => () => {
+  const startTime = performance.now()
+  // log.debug('start computing', {name})
   const res = fn()
-  console.timeEnd(timeName)
+  const duration = performance.now() - startTime
+  log.debug("computing done", { name, duration })
   return res
 }
 
@@ -15,7 +17,8 @@ module.exports = (fn, name, hash) => {
     const key = isString(arg) ? arg : hash ? hash(arg) : JSON.stringify(arg)
     let obs = cache.get(key)
     if (!obs) {
-      const compute = debug && name ? log(fn(arg), name + "/" + key) : fn(arg)
+      const compute =
+        isDev && name ? trackTime(fn(arg), name + "/" + key) : fn(arg)
       obs = observable(compute, name + "/" + key)
       cache.set(key, obs)
     }
