@@ -1,5 +1,4 @@
 const isString = require("lodash/isString")
-const defaults = require("lodash/defaults")
 const assign = require("lodash/assign")
 // prend une date ou datetime en ISO string
 // et le formate en date sans heure

@@ -18,11 +18,10 @@ module.exports = (store, wss) =>
       log.debug("new ws connection for user", userName)
       logConnectedUsers()
       let send = data => {
-        try {
-          ws.send(JSON.stringify(data))
-        } catch (err) {
-          log.warn("error sending data to client", err)
-        }
+        ws.send(JSON.stringify(data), err => {
+          if (err)
+            log.warn("error sending data to client", { userId, userName }, err)
+        })
       }
       const watchableStore = watchable(store, send)
       ws.on("message", str => {
