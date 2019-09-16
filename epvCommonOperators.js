@@ -48,6 +48,8 @@ const toLocalIsoString = (isoString, { Z = true, precision = "S" } = {}) =>
     new Date(isoString),
     `YYYY-MM-DDTHH:mm:ss${precision === "S" ? ".SSS" : ""}${Z ? "ZZ" : ""}`
   )
+const ANY = "$any$"
+
 const log = fn => fn
 // const log = (fn, name) => (arg1, arg2) => {
 //   const timeName = `computing ${name}: ${arg1}, ${arg2}`
@@ -329,9 +331,13 @@ module.exports = store => {
       // on inclue la définition de la source dans les arguments pour pouvoir
       // memoizer le résultat à partir de la définition de source et non de sa valeur
       arg => () => {
-        const ANY = "$any$"
         const values = {}
-        operators.query(arg.source).forEach(item => {
+        // console.time("multiGroupByData")
+        const data = operators.query(arg.source)
+        // console.timeEnd("multiGroupByData")
+
+        // console.time("multiGroupBy combinaisons")
+        data.forEach(item => {
           const dimValues = arg.dims.map(dimExp =>
             operators.query([{ constant: item }].concat(dimExp))
           )
@@ -349,6 +355,7 @@ module.exports = store => {
             )
           })
         })
+        // console.timeEnd("multiGroupBy combinaisons")
 
         return values
         /*
@@ -382,13 +389,12 @@ module.exports = store => {
       }
       */
       },
-      "multiGroupBy",
-      JSON.stringify
+      "multiGroupBy"
     ),
     getGroupsFromMultiGroupBy: (data, path) => {
       const groups = path && path.length > 0 ? get(data, path) : data
       if (!groups) return []
-      return Object.keys(groups).filter(k => k !== "$any$")
+      return Object.keys(groups).filter(k => k !== ANY)
     },
 
     getValuesFromMultiGroupBy: (data, path) => {
