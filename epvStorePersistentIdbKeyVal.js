@@ -1,5 +1,18 @@
 const log = require("./log").sub("storeIdbKeyVal")
-const pPipe = require("p-pipe")
+// p-pipe 1.2.0 car n'utilise pas de async ni de spread
+const pPipe = function(input) {
+  const args = Array.isArray(input) ? input : arguments
+
+  if (args.length === 0) {
+    return Promise.reject(new Error("Expected at least one argument"))
+  }
+
+  return [].slice.call(args, 1).reduce((a, b) => {
+    return function() {
+      return Promise.resolve(a.apply(null, arguments)).then(b)
+    }
+  }, args[0])
+}
 const ctxAssign = (variable, fn) => ctx => {
   if (!fn) return { [variable]: ctx }
   if (!ctx) ctx = {}
@@ -38,7 +51,11 @@ const patchKey = (storeName, patchCount) =>
   storeName + "/" + padStart(patchCount, 5, "0")
 const maxPatches = 200
 
-const createDb = ({ dbName, storeName }) => new Store(dbName, storeName)
+const createDb = arg => {
+  if (typeof arg === "string") throw new Error("invalid arg")
+  const { dbName, storeName } = arg
+  return new Store(dbName, storeName)
+}
 const ensureInitStore = ({ keys, db }) => {
   if (keys.indexOf("activeStore") >= 0) return Promise.resolve(keys)
   const activeStoreName = new Date().toISOString()
@@ -121,7 +138,7 @@ const createNewStore = (db, data, stores) => {
 //db is idbStore
 // store is a virtual store with state and patches
 // expect to be called wtih dbName
-module.exports = pPipe(
+module.exports = pPipe([
   createDb,
   ctxAssign("db"),
   ctxAssign("keys", ({ db }) => dbCall(db, keys)),
@@ -162,5 +179,5 @@ module.exports = pPipe(
       clearAllData: () => dbCall(db, clear),
       persistenceError,
     })
-  }
-)
+  },
+])
