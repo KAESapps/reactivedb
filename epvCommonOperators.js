@@ -24,7 +24,7 @@ const startsWith = require("lodash/startsWith")
 const flatten = require("lodash/flatten")
 const take = require("lodash/take")
 const drop = require("lodash/drop")
-const takeEnd = require("lodash/takeRight")
+const takeRight = require("lodash/takeRight")
 const sum = require("lodash/sum")
 const round = require("lodash/round")
 const floor = require("lodash/floor")
@@ -118,7 +118,8 @@ module.exports = store => {
     },
     modulo: (v, m) => v % m,
     take: (v, n) => (typeof v === "string" ? v.slice(0, n) : take(v, n)),
-    takeEnd,
+    takeEnd: (v, n) =>
+      typeof v === "string" ? v.slice(n * -1) : takeRight(v, n),
     drop,
     count: arr => arr.length,
     contains: (arr, exp) => includes(arr, operators.query(exp)),
