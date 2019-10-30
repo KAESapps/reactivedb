@@ -2,7 +2,10 @@ const DEADLY_SIGNALS = ["SIGTERM", "SIGINT", "SIGBREAK", "SIGHUP"]
 
 module.exports = cb => {
   const gracefulExit = () => {
-    cb().then(() => process.exit())
+    Promise.race([
+      cb(),
+      new Promise(resolve => setTimeout(resolve, 1000 * 15)),
+    ]).finally(() => process.exit())
   }
 
   DEADLY_SIGNALS.forEach(signal =>
