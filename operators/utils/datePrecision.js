@@ -1,4 +1,4 @@
-const precisionOrder = ["year", "month", "day", "hour", "minute"]
+const precisionOrder = ["year", "month", "day", "hour", "minute", "second"]
 
 module.exports = {
   precisionOrder,

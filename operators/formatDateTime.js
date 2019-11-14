@@ -15,6 +15,7 @@ module.exports = (n, options = {}) => {
         day: precisionAtLeast("day") ? "numeric" : undefined,
         hour: precisionAtLeast("hour") ? "numeric" : undefined,
         minute: precisionAtLeast("minute") ? "numeric" : undefined,
+        second: precisionAtLeast("second") ? "numeric" : undefined,
       },
       options
     )
