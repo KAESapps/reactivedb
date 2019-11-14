@@ -63,5 +63,7 @@ module.exports = (store, wss) =>
       })
     })
     wss.on("error", reject)
-    wss.on("listening", () => resolve(wss))
+    // wss.on("listening", () => resolve(wss))
+    // je comprends pas trop mais avec le nouveau greenlock, l'événement listening n'est pas envoyé. Donc je résoud la promise directement
+    resolve(wss)
   })
