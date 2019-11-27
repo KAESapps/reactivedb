@@ -128,5 +128,6 @@ module.exports = (rawClientArg, authenticatedUser) => {
     queryOnce: proxyRawMethod("query"),
     queryOnce2: proxyRawMethod("query2"),
     patch: proxyRawMethod("patch"),
+    modelCall: (modelPath, arg) => watch("modelCall", { modelPath, arg }),
   }
 }
