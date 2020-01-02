@@ -305,7 +305,6 @@ module.exports = store => {
     formatTime: (n, options) =>
       n ? new Date(n).toLocaleTimeString("fr", options) : "?",
     formatDateTime,
-    toLocalIsoString,
     formatBoolean: n => (n ? "OUI" : "NON"),
     formatCurrency: n =>
       get(n, "toLocaleString")
