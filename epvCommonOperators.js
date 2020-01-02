@@ -41,13 +41,6 @@ const formatInteger = require("./operators/formatInteger")
 const formatDecimal = require("./operators/formatDecimal")
 const formatDate = require("./operators/formatDate")
 const formatDateTime = require("./operators/formatDateTime")
-const dateFormat = require("date-fns/format")
-const toLocalIsoString = (isoString, { Z = true, precision = "S" } = {}) =>
-  isoString &&
-  dateFormat(
-    new Date(isoString),
-    `YYYY-MM-DDTHH:mm:ss${precision === "S" ? ".SSS" : ""}${Z ? "ZZ" : ""}`
-  )
 const ANY = "$any$"
 
 const log = fn => fn
