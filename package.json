@@ -23,6 +23,7 @@
   "dependencies": {
     "archiver": "3.1.1",
     "cartesian": "1.0.1",
+    "date-fns": "2.9.0",
     "fs-extra": "8.1.0",
     "idb-keyval": "3.2.0",
     "idb-wrapper": "1.7.2",
