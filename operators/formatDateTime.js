@@ -20,7 +20,7 @@ module.exports = (n, options = {}) => {
       options
     )
   }
-  if (!n || !isString(n)) return
+  if (!n || !isString(n)) return ''
 
   return new Date(n).toLocaleString(
     "fr",
