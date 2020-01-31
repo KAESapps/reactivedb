@@ -4,9 +4,21 @@ const log = require("./log").sub("patch")
 
 module.exports = store => {
   const handleRet = (p, arg, metadata) => {
+    if (!p) {
+      log.info("command without response", {
+        cmd: arg,
+        err: "noResponse",
+        metadata,
+      })
+      return
+    }
     if (p.err) {
       // allow operator to return explicit error instead of a patch
-      log.info("command refused", { cmd: arg, err: p.err, metadata })
+      log.info("command refused", {
+        cmd: arg,
+        err: p.err,
+        metadata,
+      })
       return p
     } else if (p.res) {
       // allow operator to return explicit result to client while patching
