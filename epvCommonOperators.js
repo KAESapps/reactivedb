@@ -62,7 +62,7 @@ module.exports = store => {
       store.createPatchToRemoveAllPropsOf(entityId),
     entitiesRemovePatch: ids =>
       fromPairs(map(ids, id => [id, operators.entityRemovePatch(id)])),
-    entitiesMatching: function (arg1, arg2) {
+    entitiesMatching: function(arg1, arg2) {
       const filter = arguments.length === 2 ? arg2 : arg1
 
       const filterKeys = Object.keys(filter)
@@ -91,7 +91,7 @@ module.exports = store => {
     //TODO: créer un index "entitesByValueOfProps" qui permet d'indexer avec plusieurs props au lieu d'une seule comme dans "entitesByValueOf"
     entitiesAndValueOfProp: prop => store.getFromP_ev(prop),
     getFromGroupBy: (groupBy, value) => get(groupBy, value, []),
-    constant: function (v1, v2) {
+    constant: function(v1, v2) {
       return arguments.length === 2 ? v2 : v1
     }, // dans le cas où il y a une source, constant est appelé avec 2 args mais c'est le 2ème qui compte
     typeof: v => typeof v,
@@ -300,20 +300,14 @@ module.exports = store => {
     },
     formatInteger,
     formatNumber: (n, options) =>
-      get(n, "toLocaleString") ? n.toLocaleString("fr", options) : "?",
+      get(n, "toLocaleString") ? n.toLocaleString("fr", options) : "",
     formatDate,
     formatDecimal: (n, decimals) => formatDecimal(decimals)(n),
     formatTime: (n, options) =>
-      n ? new Date(n).toLocaleTimeString("fr", options) : "?",
+      n ? new Date(n).toLocaleTimeString("fr", options) : "",
     formatDateTime,
     formatBoolean: n => (n ? "OUI" : "NON"),
-    formatCurrency: n =>
-      get(n, "toLocaleString")
-        ? n.toLocaleString("fr", {
-          minimumFractionDigits: 2,
-          maximumFractionDigits: 2,
-        })
-        : "?",
+    formatCurrency: n => formatDecimal(n, 2),
     toNumber,
     toDateTime: ([date, time]) => {
       if (!date || !date.concat || !time) return
@@ -388,7 +382,9 @@ module.exports = store => {
     getGroupsFromMultiGroupBy: (data, path) => {
       const groups = path && path.length > 0 ? get(data, path) : data
       if (!groups) return []
-      return Object.keys(groups).filter(k => k !== ANY)
+      const keys = Object.keys(groups)
+      delete keys[ANY]
+      return keys
     },
 
     getValuesFromMultiGroupBy: (data, path) => {
