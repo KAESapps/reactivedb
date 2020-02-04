@@ -30,7 +30,9 @@ module.exports = (n, options = {}) => {
       )
     }
   }
-  return new Date(n).toLocaleString(
+  const d = new Date(n)
+  if (isNaN(d)) return "" //invalid date
+  return d.toLocaleString(
     "fr",
     assign(
       // fuseau horaire de Paris par défaut
