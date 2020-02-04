@@ -382,9 +382,7 @@ module.exports = store => {
     getGroupsFromMultiGroupBy: (data, path) => {
       const groups = path && path.length > 0 ? get(data, path) : data
       if (!groups) return []
-      const keys = Object.keys(groups)
-      delete keys[ANY]
-      return keys
+      return Object.keys(groups).filter(k => k !== ANY)
     },
 
     getValuesFromMultiGroupBy: (data, path) => {
