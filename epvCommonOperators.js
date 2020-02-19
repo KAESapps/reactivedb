@@ -152,6 +152,7 @@ module.exports = store => {
       Array.isArray(v1)
         ? v1.concat(operators.query(exp))
         : v1 + operators.query(exp),
+    split: (string, sep) => string && string.split(sep),
     join: (strings, sep) => strings.join(sep),
     isDefined: v => v != null,
     default: (value, defaultValue) => (value == null ? defaultValue : value),
