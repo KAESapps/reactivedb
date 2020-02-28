@@ -155,6 +155,7 @@ module.exports = store => {
     split: (string, sep) => string && string.split(sep),
     join: (strings, sep) => strings.join(sep),
     isDefined: v => v != null,
+    isEmpty: v => (Array.isArray(v) ? v.length === 0 : v == null),
     default: (value, defaultValue) => (value == null ? defaultValue : value),
     and: (value, exp) => value && operators.query(exp),
     // à la différence de and, on fait une évaluation lazy, d'où l'api différente. C'est comme un each mais lazy, ou
