@@ -39,6 +39,7 @@ const cartesian = require("cartesian")
 const obsMemoize = require("./obsMemoize")
 const formatInteger = require("./operators/formatInteger")
 const formatDecimal = require("./operators/formatDecimal")
+const formatCurrency = require("./operators/formatCurrency")
 const formatDate = require("./operators/formatDate")
 const formatDateTime = require("./operators/formatDateTime")
 const ANY = "$any$"
@@ -309,7 +310,7 @@ module.exports = store => {
       n ? new Date(n).toLocaleTimeString("fr", options) : "",
     formatDateTime,
     formatBoolean: n => (n ? "OUI" : "NON"),
-    formatCurrency: n => formatDecimal(n, 2),
+    formatCurrency,
     toNumber,
     toDateTime: ([date, time]) => {
       if (!date || !date.concat || !time) return
