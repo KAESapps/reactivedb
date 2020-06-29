@@ -295,8 +295,10 @@ const collectEntitiesMatching = (epv, filter) => {
 }
 
 // epv doit être un map de maps de valeurs serialisables en JSON
-module.exports = epv => {
+module.exports = (epv) => {
   if (!epv) epv = new Map()
+  else epv.delete("") // évite de charger une entité "" qu'on ne pourrait plus supprimer par la suite, car générerait un patch invalide
+
   // crée un observable de v de façon lazy ainsi que la structure intermédiaire si besoin
   const getFromEpv = (e, p) => {
     let eMap = epv.get(e)
