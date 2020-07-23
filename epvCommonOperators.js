@@ -19,13 +19,16 @@ const reverse = require("lodash/reverse")
 const difference = require("lodash/difference")
 const intersection = require("lodash/intersection")
 const last = require("lodash/last")
-const first = arr => (arr ? arr[0] : null)
+const first = (arr) => (arr ? arr[0] : null)
 const startsWith = require("lodash/startsWith")
 const flatten = require("lodash/flatten")
 const take = require("lodash/take")
 const drop = require("lodash/drop")
 const takeRight = require("lodash/takeRight")
 const sum = require("lodash/sum")
+const mean = require("lodash/mean")
+const min = require("lodash/min")
+const max = require("lodash/max")
 const round = require("lodash/round")
 const floor = require("lodash/floor")
 const zipObject = require("lodash/zipObject")
@@ -44,7 +47,7 @@ const formatDate = require("./operators/formatDate")
 const formatDateTime = require("./operators/formatDateTime")
 const ANY = "$any$"
 
-const log = fn => fn
+const log = (fn) => fn
 // const log = (fn, name) => (arg1, arg2) => {
 //   const timeName = `computing ${name}: ${arg1}, ${arg2}`
 //   console.time(timeName)
@@ -53,17 +56,17 @@ const log = fn => fn
 //   return res
 // }
 
-module.exports = store => {
+module.exports = (store) => {
   const operators = {
-    getPvOf: id => store.getFromE_pv(id),
-    patchToRemoveAllPropsOf: id => ({
+    getPvOf: (id) => store.getFromE_pv(id),
+    patchToRemoveAllPropsOf: (id) => ({
       [id]: store.createPatchToRemoveAllPropsOf(id),
     }),
-    entityRemovePatch: entityId =>
+    entityRemovePatch: (entityId) =>
       store.createPatchToRemoveAllPropsOf(entityId),
-    entitiesRemovePatch: ids =>
-      fromPairs(map(ids, id => [id, operators.entityRemovePatch(id)])),
-    entitiesMatching: function(arg1, arg2) {
+    entitiesRemovePatch: (ids) =>
+      fromPairs(map(ids, (id) => [id, operators.entityRemovePatch(id)])),
+    entitiesMatching: function (arg1, arg2) {
       const filter = arguments.length === 2 ? arg2 : arg1
 
       const filterKeys = Object.keys(filter)
@@ -75,7 +78,7 @@ module.exports = store => {
       }
       return store.getEntitiesMatching(filter)
     },
-    findEntityMatching: filter =>
+    findEntityMatching: (filter) =>
       operators.query([{ entitiesMatching: filter }, "first"]), // à remplacer par un appel à entitiesByValueOfProps
     entitiesWithValue: log(
       (prop, value) => store.getFromPve(prop, value),
@@ -88,19 +91,22 @@ module.exports = store => {
     ),
     entityWithProp: (value, prop) => last(store.getFromPve(prop, value)),
     valueOfProp: (id, prop) => store.getFromEpv(id, prop),
-    entitiesByValueOf: prop => store.getFromP_ve(prop),
+    entitiesByValueOf: (prop) => store.getFromP_ve(prop),
     //TODO: créer un index "entitesByValueOfProps" qui permet d'indexer avec plusieurs props au lieu d'une seule comme dans "entitesByValueOf"
-    entitiesAndValueOfProp: prop => store.getFromP_ev(prop),
+    entitiesAndValueOfProp: (prop) => store.getFromP_ev(prop),
     getFromGroupBy: (groupBy, value) => get(groupBy, value, []),
-    constant: function(v1, v2) {
+    constant: function (v1, v2) {
       return arguments.length === 2 ? v2 : v1
     }, // dans le cas où il y a une source, constant est appelé avec 2 args mais c'est le 2ème qui compte
-    typeof: v => typeof v,
+    typeof: (v) => typeof v,
     get: (v, prop) => get(v, prop),
     first,
     last,
     flatten,
     sum,
+    mean,
+    min,
+    max,
     plus: (v, exp) => v + operators.query(exp),
     minus: (v, exp) => (exp ? v - operators.query(exp) : v[0] - v[1]),
     divide: (v, exp) => (exp ? v / operators.query(exp) : v[0] / v[1]),
@@ -115,7 +121,7 @@ module.exports = store => {
     takeEnd: (v, n) =>
       typeof v === "string" ? v.slice(n * -1) : takeRight(v, n),
     drop,
-    count: arr => arr.length,
+    count: (arr) => arr.length,
     contains: (arr, exp) => includes(arr, operators.query(exp)),
     containedIn: (v, arr) => includes(arr, v),
     localeInsensitiveIndexOf: (string, substring) => {
@@ -130,23 +136,23 @@ module.exports = store => {
     },
     localeInsensitiveContains: (string, substring) =>
       operators.localeInsensitiveIndexOf(string, substring) >= 0,
-    ObjectKeys: o => Object.keys(o),
-    reverse: arr => reverse(arr.slice()),
-    toBoolean: v => !!v,
-    not: v => !v,
-    identity: v => v,
+    ObjectKeys: (o) => Object.keys(o),
+    reverse: (arr) => reverse(arr.slice()),
+    toBoolean: (v) => !!v,
+    not: (v) => !v,
+    identity: (v) => v,
     some,
     every,
     unique: uniq,
     uniqueBy: (arr, exp) =>
-      uniqBy(arr, v => operators.query(concat({ constant: v }, exp))),
+      uniqBy(arr, (v) => operators.query(concat({ constant: v }, exp))),
     round,
     floor,
     padStart: (s, arg) => {
       if (typeof arg === "number") return padStart(s, arg)
       return padStart(s, arg.length, arg.chars)
     },
-    zipObject: args => zipObject(args[0], args[1]),
+    zipObject: (args) => zipObject(args[0], args[1]),
     fromPairs,
     concat: (v1, v2) => (Array.isArray(v1) ? v1.concat(v2) : v1 + v2),
     concatExp: (v1, exp) =>
@@ -155,66 +161,66 @@ module.exports = store => {
         : v1 + operators.query(exp),
     split: (string, sep) => string && string.split(sep),
     join: (strings, sep) => strings.join(sep),
-    isDefined: v => v != null,
-    isEmpty: v => (Array.isArray(v) ? v.length === 0 : v == null),
+    isDefined: (v) => v != null,
+    isEmpty: (v) => (Array.isArray(v) ? v.length === 0 : v == null),
     default: (value, defaultValue) => (value == null ? defaultValue : value),
     and: (value, exp) => value && operators.query(exp),
     // à la différence de and, on fait une évaluation lazy, d'où l'api différente. C'est comme un each mais lazy, ou
     or: (v, exps) => {
-      return exps.some(exp => operators.query([{ constant: v }].concat(exp)))
+      return exps.some((exp) => operators.query([{ constant: v }].concat(exp)))
     },
     defaultExp: (value, exp) => (value != null ? value : operators.query(exp)),
     groupBy: (arr, exp) => {
-      return groupBy(arr, v => {
+      return groupBy(arr, (v) => {
         return operators.query([{ constant: v }].concat(exp))
       })
     },
     filterBy: (arr, exp) => {
-      return filter(arr, v => {
+      return filter(arr, (v) => {
         return operators.query([{ constant: v }].concat(exp))
       })
     },
     filterObjectBy: (obj, exp) => {
-      return pickBy(obj, v => {
+      return pickBy(obj, (v) => {
         return operators.query([{ constant: v }].concat(exp))
       })
     },
     rejectBy: (arr, exp) => {
-      return filter(arr, v => {
+      return filter(arr, (v) => {
         return !operators.query([{ constant: v }].concat(exp))
       })
     },
     findBy: (arr, exp) => {
-      return find(arr, v => {
+      return find(arr, (v) => {
         return operators.query([{ constant: v }].concat(exp))
       })
     },
     sortBy: (ids, exp) =>
-      sortBy(ids, id => operators.query([{ constant: id }].concat(exp))),
+      sortBy(ids, (id) => operators.query([{ constant: id }].concat(exp))),
     someBy: (ids, exp) =>
-      some(ids, id => operators.query([{ constant: id }].concat(exp))),
+      some(ids, (id) => operators.query([{ constant: id }].concat(exp))),
     mapBy: (ids, exp) =>
-      map(ids, id => operators.query([{ constant: id }].concat(exp))),
+      map(ids, (id) => operators.query([{ constant: id }].concat(exp))),
     // crée un objet avec les valeurs du array en key and value
-    arrayToObject: arr => arr.reduce((acc, id) => set(acc, id, id), {}),
+    arrayToObject: (arr) => arr.reduce((acc, id) => set(acc, id, id), {}),
     mapObjectBy: (obj, exp) =>
-      mapValues(obj, id => operators.query([{ constant: id }].concat(exp))),
+      mapValues(obj, (id) => operators.query([{ constant: id }].concat(exp))),
     mapKeysBy: (obj, exp) =>
-      mapKeys(obj, id => operators.query([{ constant: id }].concat(exp))),
+      mapKeys(obj, (id) => operators.query([{ constant: id }].concat(exp))),
     // assigne sur arg1 ou sur un objet vide, le ou les objets sources (soit un objet seul ou un array de sources)
     assign: (arg1, arg2) => {
       const target = arg2 ? arg1 : {}
       const sources = operators.query(arg2 ? arg2 : arg1)
       return Object.assign.apply(null, concat(target, sources))
     },
-    merge: sources => merge({}, ...sources),
+    merge: (sources) => merge({}, ...sources),
     each: (v, exps) => {
       let mapExp
       if (!exps) {
         exps = v
-        mapExp = exp => operators.query(exp)
+        mapExp = (exp) => operators.query(exp)
       } else {
-        mapExp = exp => operators.query([{ constant: v }].concat(exp))
+        mapExp = (exp) => operators.query([{ constant: v }].concat(exp))
       }
       return (Array.isArray(exps) ? map : mapValues)(exps, mapExp)
     },
@@ -224,9 +230,9 @@ module.exports = store => {
       let mapExp
       if (!exps) {
         exps = v
-        mapExp = exp => operators.query(exp)
+        mapExp = (exp) => operators.query(exp)
       } else {
-        mapExp = exp => operators.query([{ constant: v }].concat(exp))
+        mapExp = (exp) => operators.query([{ constant: v }].concat(exp))
       }
       for (var i = 0; i < exps.length; i++) {
         let res = mapExp(exps[i])
@@ -255,8 +261,8 @@ module.exports = store => {
       return v1 === v2
     },
     equalExp: (value, exp) => value === operators.query(exp),
-    isTruthy: v => !!v,
-    isFalsy: v => !v,
+    isTruthy: (v) => !!v,
+    isFalsy: (v) => !v,
     startsWith: (arg1, arg2) => {
       return startsWith(arg1, arg2)
     },
@@ -309,7 +315,7 @@ module.exports = store => {
     formatTime: (n, options) =>
       n ? new Date(n).toLocaleTimeString("fr", options) : "",
     formatDateTime,
-    formatBoolean: n => (n ? "OUI" : "NON"),
+    formatBoolean: (n) => (n ? "OUI" : "NON"),
     formatCurrency,
     toNumber,
     toDateTime: ([date, time]) => {
@@ -321,27 +327,27 @@ module.exports = store => {
     multiGroupBy: obsMemoize(
       // on inclue la définition de la source dans les arguments pour pouvoir
       // memoizer le résultat à partir de la définition de source et non de sa valeur
-      arg => () => {
+      (arg) => () => {
         const values = {}
         // console.time("multiGroupByData")
         const data = operators.query(arg.source)
         // console.timeEnd("multiGroupByData")
 
         // console.time("multiGroupBy combinaisons")
-        data.forEach(item => {
-          const dimValues = arg.dims.map(dimExp =>
+        data.forEach((item) => {
+          const dimValues = arg.dims.map((dimExp) =>
             operators.query([{ constant: item }].concat(dimExp))
           )
 
           // toutes les combinaisons de dimensions, totaux compris
-          const combinations = cartesian(dimValues.map(v => [v, ANY]))
+          const combinations = cartesian(dimValues.map((v) => [v, ANY]))
 
-          combinations.forEach(path => {
+          combinations.forEach((path) => {
             // ajoute l'élément dans la liste croisée
             updateWith(
               values,
               path,
-              arr => (arr ? arr.concat(item) : [item]),
+              (arr) => (arr ? arr.concat(item) : [item]),
               Object
             )
           })
@@ -385,7 +391,7 @@ module.exports = store => {
     getGroupsFromMultiGroupBy: (data, path) => {
       const groups = path && path.length > 0 ? get(data, path) : data
       if (!groups) return []
-      return Object.keys(groups).filter(k => k !== ANY)
+      return Object.keys(groups).filter((k) => k !== ANY)
     },
 
     getValuesFromMultiGroupBy: (data, path) => {
@@ -397,7 +403,7 @@ module.exports = store => {
       const { searchValue, mapBy, keys } = arg
 
       // map source items
-      const items = source.map(item => ({
+      const items = source.map((item) => ({
         sourceItem: item,
         sortingValue: operators.query([{ constant: item }].concat(mapBy)),
       }))
@@ -405,17 +411,17 @@ module.exports = store => {
       // sort items, and return sorted source items back
       return matchSorter(items, searchValue, {
         keys: keys
-          ? keys.map(k => i => i.sortingValue[k])
-          : [i => i.sortingValue],
-      }).map(i => i.sourceItem)
+          ? keys.map((k) => (i) => i.sortingValue[k])
+          : [(i) => i.sortingValue],
+      }).map((i) => i.sourceItem)
     },
-    toCsvCell: v => {
+    toCsvCell: (v) => {
       if (typeof v === "string") return '"' + v + '"'
       if (typeof v === "boolean") return v ? "true" : "false"
       return v + ""
     },
-    toCsvRow: arr => arr.map(operators.toCsvCell).join(","),
-    toCsv: arr => arr.map(operators.toCsvRow).join("\r\n"),
+    toCsvRow: (arr) => arr.map(operators.toCsvCell).join(","),
+    toCsv: (arr) => arr.map(operators.toCsvRow).join("\r\n"),
   }
   return operators
 }
