@@ -8,6 +8,7 @@ const uniq = require("lodash/uniq")
 const uniqBy = require("lodash/uniqBy")
 const includes = require("lodash/includes")
 const filter = require("lodash/filter")
+const compact = require("lodash/compact")
 const groupBy = require("lodash/groupBy")
 const pickBy = require("lodash/pickBy")
 const find = require("lodash/find")
@@ -107,6 +108,7 @@ module.exports = (store) => {
     mean,
     min,
     max,
+    compact,
     plus: (v, exp) => v + operators.query(exp),
     minus: (v, exp) => (exp ? v - operators.query(exp) : v[0] - v[1]),
     divide: (v, exp) => (exp ? v / operators.query(exp) : v[0] / v[1]),
