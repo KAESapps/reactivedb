@@ -418,9 +418,8 @@ module.exports = (store) => {
       }).map((i) => i.sourceItem)
     },
     toCsvCell: (v) => {
-      if (typeof v === "string") return '"' + v + '"'
-      if (typeof v === "boolean") return v ? "true" : "false"
-      return v + ""
+      if (v == null) return "" //null or undefined
+      return JSON.stringify(v)
     },
     toCsvRow: (arr) => arr.map(operators.toCsvCell).join(","),
     toCsv: (arr) => arr.map(operators.toCsvRow).join("\r\n"),
