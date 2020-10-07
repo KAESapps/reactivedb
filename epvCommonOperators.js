@@ -167,9 +167,10 @@ module.exports = (store) => {
     isEmpty: (v) => (Array.isArray(v) ? v.length === 0 : v == null),
     default: (value, defaultValue) => (value == null ? defaultValue : value),
     and: (value, exp) => value && operators.query(exp),
-    // à la différence de and, on fait une évaluation lazy, d'où l'api différente. C'est comme un each mais lazy, ou
+    andLazy: (value, exps) =>
+      every(exps, (exp) => operators.query([{ constant: value }].concat(exp))),
     or: (v, exps) => {
-      return exps.some((exp) => operators.query([{ constant: v }].concat(exp)))
+      return some(exps, (exp) => operators.query([{ constant: v }].concat(exp)))
     },
     defaultExp: (value, exp) => (value != null ? value : operators.query(exp)),
     groupBy: (arr, exp) => {
