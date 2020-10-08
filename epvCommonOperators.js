@@ -422,8 +422,10 @@ module.exports = (store) => {
       if (v == null) return "" //null or undefined
       return JSON.stringify(v)
     },
-    toCsvRow: (arr) => arr.map(operators.toCsvCell).join(","),
-    toCsv: (arr) => arr.map(operators.toCsvRow).join("\r\n"),
+    toCsvRow: (arr, options) =>
+      arr.map(operators.toCsvCell).join((options && options.separator) || ","),
+    toCsv: (arr, options) =>
+      arr.map((r) => operators.toCsvRow(r, options)).join("\r\n"),
   }
   return operators
 }
