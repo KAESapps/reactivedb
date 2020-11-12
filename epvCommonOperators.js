@@ -228,7 +228,7 @@ module.exports = (store) => {
       return (Array.isArray(exps) ? map : mapValues)(exps, mapExp)
     },
     // retourne le premier résultat non null
-    // c'est comme un each mais qui retourne le premier résultat non null... ou sinon la valeur d'origine
+    // c'est comme un each mais qui retourne le premier résultat non null ...
     firstDefined: (v, exps) => {
       let mapExp
       if (!exps) {
@@ -241,7 +241,6 @@ module.exports = (store) => {
         let res = mapExp(exps[i])
         if (res != null) return res
       }
-      return v
     },
     gte: (arg1, arg2) => {
       const [v1, v2] = Array.isArray(arg1) ? arg1 : [arg1, arg2]
