@@ -1,7 +1,8 @@
-var firstKey = o => Object.keys(o)[0]
+const log = require("./log").sub("query")
+var firstKey = (o) => Object.keys(o)[0]
 
-module.exports = operators => {
-  operators.query = query => {
+module.exports = (operators) => {
+  operators.query = (query) => {
     let source, operation
     if (Array.isArray(query)) {
       source = query.slice()
@@ -15,8 +16,8 @@ module.exports = operators => {
     if (typeof operation === "object") arg = operation[operator]
 
     if (!operators[operator]) {
-      console.error(`opérateur inconnu "${operator}" in query`, operation)
-      throw new Error("opérateur inconnu")
+      log.error("opérateur inconnu", { operator, query, operation })
+      return null // TODO: est-ce une bonne idée de ne pas planter ?
     }
 
     return source && source.length
