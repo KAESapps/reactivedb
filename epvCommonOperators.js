@@ -39,6 +39,7 @@ const toNumber = require("lodash/toNumber")
 const padStart = require("lodash/padStart")
 const matchSorter = require("match-sorter").default
 const localeIndexOf = require("locale-index-of")(Intl)
+const formatISO = require("date-fns/formatISO")
 const cartesian = require("cartesian")
 const obsMemoize = require("./obsMemoize")
 const formatInteger = require("./operators/formatInteger")
@@ -324,6 +325,8 @@ module.exports = (store) => {
       if (!date || !date.concat || !time) return
       return date.concat("T", time)
     },
+    isoDateTimeToDate: (isoDateTime) =>
+      formatISO(new Date(isoDateTime), { representation: "date" }),
     stringify: JSON.stringify,
 
     multiGroupBy: obsMemoize(
