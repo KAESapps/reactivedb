@@ -326,7 +326,23 @@ module.exports = (store) => {
       return date.concat("T", time)
     },
     isoDateTimeToDate: (isoDateTime) =>
-      formatISO(new Date(isoDateTime), { representation: "date" }),
+      isoDateTime
+        ? formatISO(new Date(isoDateTime), { representation: "date" })
+        : null,
+    isoDateTimeToMonth: (isoDateTime) =>
+      isoDateTime
+        ? formatISO(new Date(isoDateTime), { representation: "date" }).slice(
+            0,
+            7
+          )
+        : null,
+    isoDateTimeToYear: (isoDateTime) =>
+      isoDateTime
+        ? formatISO(new Date(isoDateTime), { representation: "date" }).slice(
+            0,
+            4
+          )
+        : null,
     stringify: JSON.stringify,
 
     multiGroupBy: obsMemoize(
