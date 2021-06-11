@@ -30,17 +30,17 @@
     "klogs": "github:KAESapps/klogs#b29e99462c494bcf8868c0728d551a5af0b36c8c",
     "ld-jsonstream": "2.0.2",
     "locale-index-of": "1.0.7",
-    "lodash": "4.17.15",
+    "lodash": "4.17.21",
     "match-sorter": "4.0.2",
-    "p-retry": "4.2.0",
+    "p-retry": "4.5.0",
     "sanitize-filename": "1.6.3",
-    "shortid": "2.2.15"
+    "shortid": "2.2.16"
   },
   "prettier": {
     "trailingComma": "es5",
     "semi": false
   },
   "devDependencies": {
-    "eslint": "6.8.0"
+    "eslint": "7.28.0"
   }
 }
