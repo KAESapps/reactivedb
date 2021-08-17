@@ -32,6 +32,7 @@ const min = require("lodash/min")
 const max = require("lodash/max")
 const round = require("lodash/round")
 const floor = require("lodash/floor")
+const ceil = require("lodash/ceil")
 const zipObject = require("lodash/zipObject")
 const fromPairs = require("lodash/fromPairs")
 const updateWith = require("lodash/updateWith")
@@ -151,6 +152,9 @@ module.exports = (store) => {
       uniqBy(arr, (v) => operators.query(concat({ constant: v }, exp))),
     round,
     floor,
+    roundDown: floor,
+    ceil,
+    roundUp: ceil,
     padStart: (s, arg) => {
       if (typeof arg === "number") return padStart(s, arg)
       return padStart(s, arg.length, arg.chars)
