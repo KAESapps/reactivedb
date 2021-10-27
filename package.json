@@ -21,18 +21,18 @@
   },
   "homepage": "https://github.com/KAESapps/reactivedb#readme",
   "dependencies": {
-    "archiver": "3.1.1",
+    "archiver": "5.3.0",
     "cartesian": "1.0.1",
-    "date-fns": "2.9.0",
-    "fs-extra": "8.1.0",
-    "idb-keyval": "3.2.0",
+    "date-fns": "2.19.0",
+    "fs-extra": "10.0.0",
+    "idb-keyval": "6.0.3",
     "idb-wrapper": "1.7.2",
     "klogs": "github:KAESapps/klogs#b29e99462c494bcf8868c0728d551a5af0b36c8c",
     "ld-jsonstream": "2.0.2",
     "locale-index-of": "1.0.7",
     "lodash": "4.17.21",
     "match-sorter": "4.0.2",
-    "p-retry": "4.5.0",
+    "p-retry": "4.6.1",
     "sanitize-filename": "1.6.3",
     "shortid": "2.2.16"
   },
@@ -41,6 +41,6 @@
     "semi": false
   },
   "devDependencies": {
-    "eslint": "7.28.0"
+    "eslint": "8.1.0"
   }
 }

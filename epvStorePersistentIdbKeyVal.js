@@ -1,6 +1,6 @@
 const log = require("./log").sub("storeIdbKeyVal")
 // p-pipe 1.2.0 car n'utilise pas de async ni de spread
-const pPipe = function(input) {
+const pPipe = function (input) {
   const args = Array.isArray(input) ? input : arguments
 
   if (args.length === 0) {
@@ -8,15 +8,15 @@ const pPipe = function(input) {
   }
 
   return [].slice.call(args, 1).reduce((a, b) => {
-    return function() {
+    return function () {
       return Promise.resolve(a.apply(null, arguments)).then(b)
     }
   }, args[0])
 }
-const ctxAssign = (variable, fn) => ctx => {
+const ctxAssign = (variable, fn) => (ctx) => {
   if (!fn) return { [variable]: ctx }
   if (!ctx) ctx = {}
-  return fn(ctx).then(res => {
+  return fn(ctx).then((res) => {
     if (variable) {
       ctx[variable] = res
     }
@@ -27,7 +27,7 @@ const compact = require("lodash/compact")
 const mapValues = require("lodash/mapValues")
 const groupBy = require("lodash/groupBy")
 const padStart = require("lodash/padStart")
-const { Store, get, set, del, clear, keys } = require("idb-keyval")
+const { createStore, get, set, del, clear, keys } = require("idb-keyval")
 const epvStore = require("./epvStore")
 const { patch: patchData } = require("./kkvHelpers")
 const create = require("lodash/create")
@@ -36,13 +36,13 @@ const dbCall = (db, method, arg1, arg2) => {
   // const callName = method.name
   // console.log("starting", callName)
   // console.time(callName)
-  return method.apply(null, compact([arg1, arg2, db])).then(res => {
+  return method.apply(null, compact([arg1, arg2, db])).then((res) => {
     // console.timeEnd(callName)
     // console.log("done", callName, res)
     return res
   })
 }
-const spy = fn => v => {
+const spy = (fn) => (v) => {
   fn(v)
   return v
 }
@@ -51,10 +51,10 @@ const patchKey = (storeName, patchCount) =>
   storeName + "/" + padStart(patchCount, 5, "0")
 const maxPatches = 200
 
-const createDb = arg => {
+const createDb = (arg) => {
   if (typeof arg === "string") throw new Error("invalid arg")
   const { dbName, storeName } = arg
-  return new Store(dbName, storeName)
+  return createStore(dbName, storeName)
 }
 const ensureInitStore = ({ keys, db }) => {
   if (keys.indexOf("activeStore") >= 0) return Promise.resolve(keys)
@@ -67,8 +67,8 @@ const ensureInitStore = ({ keys, db }) => {
   )
 }
 const loadStoresMetaData = ({ db, keys }) =>
-  dbCall(db, get, "activeStore").then(activeStoreName => {
-    const keysByStore = groupBy(keys, k => k.split("/")[0])
+  dbCall(db, get, "activeStore").then((activeStoreName) => {
+    const keysByStore = groupBy(keys, (k) => k.split("/")[0])
     delete keysByStore.activeStore
     const allStores = mapValues(keysByStore, (keys, name) => {
       const patchesToLoad = keys.sort()
@@ -87,9 +87,9 @@ const loadActiveStoreData = ({ db, stores }) => {
   const data = new Map()
   const activeStore = stores.active
   return Promise.all(
-    activeStore.patchesToLoad.map(k => dbCall(db, get, k))
-  ).then(patches => {
-    patches.forEach(patch => {
+    activeStore.patchesToLoad.map((k) => dbCall(db, get, k))
+  ).then((patches) => {
+    patches.forEach((patch) => {
       patchData(data, patch)
     })
     return data
@@ -102,19 +102,19 @@ const writePatch = (db, store, patch) => {
   return dbCall(db, set, key, patch)
 }
 const removeOldStores = (db, stores) =>
-  dbCall(db, keys).then(keys => {
-    const keysByStore = groupBy(keys, k => k.split("/")[0])
+  dbCall(db, keys).then((keys) => {
+    const keysByStore = groupBy(keys, (k) => k.split("/")[0])
     delete keysByStore.activeStore
     const activeStoreName = stores.active.name
     const initializingStoreName =
       stores.initializing && stores.initializing.name
     const oldStores = Object.keys(keysByStore).filter(
-      s => s !== activeStoreName && s !== initializingStoreName
+      (s) => s !== activeStoreName && s !== initializingStoreName
     )
     return Promise.all(
-      oldStores.map(store => {
+      oldStores.map((store) => {
         const keys = keysByStore[store]
-        return Promise.all(keys.map(k => dbCall(db, del, k)))
+        return Promise.all(keys.map((k) => dbCall(db, del, k)))
       })
     )
   })
@@ -156,7 +156,7 @@ module.exports = pPipe([
     const persistenceError = observable(false, "persistenceError")
     const memoryStore = epvStore(data)
 
-    const patchAndSave = patch => {
+    const patchAndSave = (patch) => {
       // call memory store patch
       memoryStore.patch(patch)
       // and then persist it

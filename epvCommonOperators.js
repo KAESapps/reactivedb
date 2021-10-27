@@ -106,7 +106,9 @@ module.exports = (store) => {
     first,
     last,
     flatten,
-    sum,
+    sum: (arg) => {
+      return sum(compact(arg))
+    },
     mean,
     min,
     max,
