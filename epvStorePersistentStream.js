@@ -15,7 +15,7 @@ const log = require("./log").sub("epvPersistentStream")
 const monitor = (timeLabel, task) => () => {
   log.debug("start", timeLabel)
   const startTime = Date.now()
-  return task().then(res => {
+  return task().then((res) => {
     log.debug(timeLabel, `in ${Date.now() - startTime} ms`)
     return res
   })
@@ -35,7 +35,7 @@ module.exports = (dirPath, { writePatches = true } = {}) => {
       // load current state file
       monitor("read state file", () =>
         fs.pathExists(statePath).then(
-          stateExists =>
+          (stateExists) =>
             stateExists &&
             new Promise((resolve, reject) => {
               let rowsCount = 0
@@ -60,33 +60,35 @@ module.exports = (dirPath, { writePatches = true } = {}) => {
     .then(
       // load current delta file
       monitor("read delta file", () =>
-        fs.pathExists(deltaPath).then(
-          deltaExits =>
-            deltaExits &&
-            new Promise((resolve, reject) => {
-              let rowsCount = 0
-              const rs = fs.createReadStream(
-                path.join(dirPath, "current", "delta"),
-                {
-                  encoding: "utf8",
-                }
-              )
-              const ls = new LDJSONStream({ objectMode: true })
-              rs.pipe(ls)
-              ls.on("data", ([k1, k2, value]) => {
-                rowsCount++
-                return value == null
-                  ? unset(data, k1, k2)
-                  : set(data, k1, k2, value)
-              })
-              ls.on("end", () => {
-                log("delta file loaded", { rowsCount })
-                if (!rowsCount) noDeltaEntries = true
-                resolve()
-              })
-              ls.on("error", reject)
+        fs.pathExists(deltaPath).then((deltaExits) => {
+          if (!deltaExits) {
+            noDeltaEntries = true
+            return Promise.resolve()
+          }
+          return new Promise((resolve, reject) => {
+            let rowsCount = 0
+            const rs = fs.createReadStream(
+              path.join(dirPath, "current", "delta"),
+              {
+                encoding: "utf8",
+              }
+            )
+            const ls = new LDJSONStream({ objectMode: true })
+            rs.pipe(ls)
+            ls.on("data", ([k1, k2, value]) => {
+              rowsCount++
+              return value == null
+                ? unset(data, k1, k2)
+                : set(data, k1, k2, value)
             })
-        )
+            ls.on("end", () => {
+              log("delta file loaded", { rowsCount })
+              if (!rowsCount) noDeltaEntries = true
+              resolve()
+            })
+            ls.on("error", reject)
+          })
+        })
       )
     )
     .then(() => fs.ensureDir(path.join(dirPath, "archives")))
@@ -143,28 +145,27 @@ module.exports = (dirPath, { writePatches = true } = {}) => {
 
       // on ouvre une stream en écriture sur le fichier delta qui doit être vide
       const ws = fs.createWriteStream(deltaPath)
-      ws.on("error", err => log.error("Erreur de sauvegarde des données", err))
+      ws.on("error", (err) =>
+        log.error("Erreur de sauvegarde des données", err)
+      )
 
       const rss = streamOfStreams()
       rss.pipe(ws)
 
       gracefulExit(() => {
         log.warn("Finish writing delta file before exit...")
-        const promise = new Promise(resolve => ws.on("finish", resolve))
+        const promise = new Promise((resolve) => ws.on("finish", resolve))
         rss.end()
         return promise
       })
 
-      const patchAndSave = patch => {
+      const patchAndSave = (patch) => {
         if (writePatches) {
           // save a backup of the patch
           fs.writeFile(
             path.join(
               patchesPath,
-              new Date()
-                .toISOString()
-                .replace(":", "-")
-                .replace(":", "-")
+              new Date().toISOString().replace(":", "-").replace(":", "-")
             ) + ".json",
             JSON.stringify(patch)
           )
@@ -204,7 +205,7 @@ module.exports = (dirPath, { writePatches = true } = {}) => {
             return null
           }
 
-          const reader = write => {
+          const reader = (write) => {
             const triplet = nextTriplet()
             if (triplet == null) {
               // console.log(count, "rows writen")
