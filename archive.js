@@ -8,15 +8,12 @@ module.exports = (source, destination) =>
     var archive = archiver("zip", {
       zlib: { level: 9 }, // Sets the compression level.
     })
-    output.on("close", function() {
-      log.debug(archive.pointer() + " total bytes")
+    output.on("close", function () {
+      // log.debug(archive.pointer() + " total bytes")
       log.debug("success archiving", destination)
       resolve()
     })
-    output.on("end", function() {
-      log.debug("Data has been drained")
-    })
-    archive.on("warning", function(err) {
+    archive.on("warning", function (err) {
       if (err.code === "ENOENT") {
         // log warning
         log.warn(err)
