@@ -45,7 +45,7 @@ const unsetObject = (exports.unsetObject = (store, k1, k2) => {
   if (Object.keys(v1).length === 0) delete store[k1]
 })
 
-// mute store (object) en appliquant patch
+// mute store (map) en appliquant patch
 exports.patch = (store, patch) => {
   forEach(patch, (k1Patch, k1) => {
     let m1 = store.get(k1)
@@ -85,7 +85,7 @@ exports.patchObject = (store, patch) => {
 }
 
 // source est un map de maps et le résultat est un kkv plain object
-const cloneObject = (exports.clone = source => {
+const cloneObject = (exports.clone = (source) => {
   const clone = {}
   forEach(source, (kv, k1) => {
     forEach(kv, (v, k2) => {
@@ -122,7 +122,7 @@ exports.diff = (source, target) => {
 
 const tripletsToKkv = (exports.tripletsToKkv = (triplets, kkv) => {
   if (!kkv) kkv = {}
-  forEach(triplets, v => {
+  forEach(triplets, (v) => {
     if (Array.isArray(v[0])) {
       tripletsToKkv(v, kkv) // supporte le nesting
     } else {
@@ -136,7 +136,7 @@ const tripletsToKkv = (exports.tripletsToKkv = (triplets, kkv) => {
 const setFromStream = (exports.setFromStream = (store, kkvStream) => {
   return new Promise((resolve, reject) => {
     let rowsRead = 0
-    kkvStream.on("data", data => {
+    kkvStream.on("data", (data) => {
       if (!Array.isArray(data)) return //ignore non kkv entries
       const [e, p, v] = data
       set(store, e, p, v)
@@ -157,4 +157,19 @@ exports.loadFromFile = (store, path, start) => {
     })
     .pipe(new LDJSONStream({ objectMode: true }))
   return setFromStream(store, kkvStream)
+}
+
+// merge le second patch (source) sur le premier (target) en le mutant
+exports.mergePatches = (target, source) => {
+  forEach(source, (k1Patch, k1) => {
+    let m1 = target[k1]
+    if (!m1) {
+      m1 = {}
+      target[k1] = m1
+    }
+    forEach(k1Patch, (v2, k2) => {
+      m1[k2] = v2
+    })
+  })
+  return target
 }
