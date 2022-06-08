@@ -1,5 +1,5 @@
 const log = require("./log").sub("query")
-var firstKey = (o) => Object.keys(o)[0]
+var firstKey = (o) => (o ? Object.keys(o)[0] : null)
 
 module.exports = (operators) => {
   operators.query = (query) => {
@@ -12,13 +12,11 @@ module.exports = (operators) => {
     }
     var operator =
       typeof operation === "string" ? operation : firstKey(operation)
-    var arg
-    if (typeof operation === "object") arg = operation[operator]
-
-    if (!operators[operator]) {
+    if (!operator || !operators[operator]) {
       log.error("opérateur inconnu", { operator, query, operation })
       return null // TODO: est-ce une bonne idée de ne pas planter ?
     }
+    const arg = typeof operation === "object" ? operation[operator] : undefined
 
     return source && source.length
       ? operators[operator](operators.query(source), arg)
