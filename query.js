@@ -18,9 +18,24 @@ module.exports = (operators) => {
     }
     const arg = typeof operation === "object" ? operation[operator] : undefined
 
-    return source && source.length
-      ? operators[operator](operators.query(source), arg)
-      : operators[operator](arg)
+    let sourceRes
+    if (source && source.length) {
+      sourceRes = operators.query(source)
+    }
+    const start = performance.now()
+    const res =
+      source && source.length
+        ? operators[operator](sourceRes, arg)
+        : operators[operator](arg)
+    const end = performance.now()
+    const duration = end - start
+    if (duration > 1000 * 10) {
+      log.warn("long query", {
+        seconds: Math.round(duration / 1000),
+        query,
+      })
+    }
+    return res
   }
   return operators.query
 }
