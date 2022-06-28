@@ -2,7 +2,7 @@
 // méthode qui permet de générer un patch à partir d'une query (sous forme d'un array)
 const log = require("./log").sub("patch")
 
-module.exports = store => {
+module.exports = (store) => {
   const handleRet = (p, arg, metadata) => {
     if (!p) {
       log.info("command without response", {
@@ -20,7 +20,7 @@ module.exports = store => {
         metadata,
       })
       return p
-    } else if (p.res) {
+    } else if (p.res !== undefined) {
       // allow operator to return explicit result to client while patching
       log.debug("command accepted", {
         cmd: arg,
@@ -53,7 +53,7 @@ module.exports = store => {
     const ret = Array.isArray(arg) ? store.query(arg) : arg
     // TODO: on ne retourne un promise que si la création du patch est asynchrone car sinon ça casse la synchro mobile.... pas terrible !!!
     return ret && ret.then
-      ? ret.then(p => handleRet(p, arg, metadata))
+      ? ret.then((p) => handleRet(p, arg, metadata))
       : handleRet(ret, arg, metadata)
   }
 
