@@ -1,3 +1,5 @@
+const env = process.env.NODE_ENV ||"dev"
+const log = require("./log")
 const get = require("lodash/get")
 const merge = require("lodash/merge")
 const set = require("lodash/set")
@@ -50,14 +52,13 @@ const formatDate = require("./operators/formatDate")
 const formatDateTime = require("./operators/formatDateTime")
 const ANY = "$any$"
 
-const log = (fn) => fn
-// const log = (fn, name) => (arg1, arg2) => {
-//   const timeName = `computing ${name}: ${arg1}, ${arg2}`
-//   console.time(timeName)
-//   const res = fn(arg1, arg2)
-//   console.timeEnd(timeName)
-//   return res
-// }
+const logComputed = env === "dev" ? (fn, name) => (arg1, arg2) => {
+  const timeName = `computing ${name}: ${arg1}, ${arg2}`
+  console.time(timeName)
+  const res = fn(arg1, arg2)
+  console.timeEnd(timeName)
+  return res
+}:(fn) => fn
 
 module.exports = (store) => {
   const operators = {
@@ -83,12 +84,12 @@ module.exports = (store) => {
     },
     findEntityMatching: (filter) =>
       operators.query([{ entitiesMatching: filter }, "first"]), // à remplacer par un appel à entitiesByValueOfProps
-    entitiesWithValue: log(
+    entitiesWithValue: logComputed(
       (prop, value) => store.getFromPve(prop, value),
       "entitiesWithValue"
     ),
     entityWithValue: (prop, value) => last(store.getFromPve(prop, value)),
-    entitiesWithProp: log(
+    entitiesWithProp: logComputed(
       (value, prop) => store.getFromPve(prop, value),
       "entitiesWithProp"
     ),
