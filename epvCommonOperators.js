@@ -350,6 +350,14 @@ module.exports = (store) => {
           )
         : null,
     stringify: JSON.stringify,
+    jsonParse: (v) => {
+      try {
+        return JSON.parse(v)
+      } catch (err) {
+        log.warn("jsonParse operator error", { err })
+        return null
+      }
+    },
 
     multiGroupBy: obsMemoize(
       // on inclue la définition de la source dans les arguments pour pouvoir
