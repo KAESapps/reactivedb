@@ -1,9 +1,10 @@
-const env = process.env.NODE_ENV ||"dev"
+const env = process.env.NODE_ENV || "dev"
 const log = require("./log")
 const get = require("lodash/get")
 const merge = require("lodash/merge")
 const set = require("lodash/set")
 const sortBy = require("lodash/sortBy")
+const orderBy = require("lodash/orderBy")
 const some = require("lodash/some")
 const every = require("lodash/every")
 const uniq = require("lodash/uniq")
@@ -52,13 +53,16 @@ const formatDate = require("./operators/formatDate")
 const formatDateTime = require("./operators/formatDateTime")
 const ANY = "$any$"
 
-const logComputed = env === "dev" ? (fn, name) => (arg1, arg2) => {
-  const timeName = `computing ${name}: ${arg1}, ${arg2}`
-  console.time(timeName)
-  const res = fn(arg1, arg2)
-  console.timeEnd(timeName)
-  return res
-}:(fn) => fn
+const logComputed =
+  env === "dev"
+    ? (fn, name) => (arg1, arg2) => {
+        const timeName = `computing ${name}: ${arg1}, ${arg2}`
+        console.time(timeName)
+        const res = fn(arg1, arg2)
+        console.timeEnd(timeName)
+        return res
+      }
+    : (fn) => fn
 
 module.exports = (store) => {
   const operators = {
@@ -208,6 +212,16 @@ module.exports = (store) => {
     },
     sortBy: (ids, exp) =>
       sortBy(ids, (id) => operators.query([{ constant: id }].concat(exp))),
+    orderBy: (ids, arg) => {
+      const { mappers, orders } = arg
+      return orderBy(
+        ids,
+        mappers.map(
+          (exp) => (id) => operators.query([{ constant: id }].concat(exp))
+        ),
+        orders
+      )
+    },
     someBy: (ids, exp) =>
       some(ids, (id) => operators.query([{ constant: id }].concat(exp))),
     mapBy: (ids, exp) =>
