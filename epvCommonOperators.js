@@ -88,15 +88,9 @@ module.exports = (store) => {
     },
     findEntityMatching: (filter) =>
       operators.query([{ entitiesMatching: filter }, "first"]), // à remplacer par un appel à entitiesByValueOfProps
-    entitiesWithValue: logComputed(
-      (prop, value) => store.getFromPve(prop, value),
-      "entitiesWithValue"
-    ),
+    entitiesWithValue: (prop, value) => store.getFromPve(prop, value),
     entityWithValue: (prop, value) => last(store.getFromPve(prop, value)),
-    entitiesWithProp: logComputed(
-      (value, prop) => store.getFromPve(prop, value),
-      "entitiesWithProp"
-    ),
+    entitiesWithProp: (value, prop) => store.getFromPve(prop, value),
     entityWithProp: (value, prop) => last(store.getFromPve(prop, value)),
     valueOfProp: (id, prop) => store.getFromEpv(id, prop),
     entitiesByValueOf: (prop) => store.getFromP_ve(prop),
