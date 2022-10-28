@@ -1,3 +1,4 @@
+const env = process.env.NODE_ENV || "dev"
 const archive = require("./archive")
 const fs = require("fs-extra")
 const path = require("path")
@@ -94,8 +95,9 @@ module.exports = (dirPath, { writePatches = true } = {}) => {
     .then(() => fs.ensureDir(path.join(dirPath, "archives")))
     .then(
       // archive current files (only if there was delta entries)
+      //en dev on bypass l'archivage pour démarrer plus vite
       monitor("archive current files", () => {
-        if (noDeltaEntries) return Promise.resolve()
+        if (env === "dev" || noDeltaEntries) return Promise.resolve()
         return archive(
           currentPath,
           path.join(
@@ -111,7 +113,7 @@ module.exports = (dirPath, { writePatches = true } = {}) => {
     .then(
       // save current state (only if there was delta entries)
       monitor("save current state", () => {
-        if (noDeltaEntries) return Promise.resolve()
+        if (env === "dev" || noDeltaEntries) return Promise.resolve()
         let count = 0
 
         const rs = Readable()
@@ -144,7 +146,10 @@ module.exports = (dirPath, { writePatches = true } = {}) => {
       log.debug("enabling auto-save")
 
       // on ouvre une stream en écriture sur le fichier delta qui doit être vide
-      const ws = fs.createWriteStream(deltaPath)
+      const ws = fs.createWriteStream(
+        deltaPath,
+        env === "dev" ? { flags: "a" } : undefined
+      )
       ws.on("error", (err) =>
         log.error("Erreur de sauvegarde des données", err)
       )
