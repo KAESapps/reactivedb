@@ -26,6 +26,7 @@ const last = require("lodash/last")
 const first = (arr) => (arr ? arr[0] : null)
 const startsWith = require("lodash/startsWith")
 const flatten = require("lodash/flatten")
+const flattenDeep = require("lodash/flattenDeep")
 const take = require("lodash/take")
 const drop = require("lodash/drop")
 const takeRight = require("lodash/takeRight")
@@ -105,6 +106,7 @@ module.exports = (store) => {
     first,
     last,
     flatten,
+    flattenDeep,
     sum: (arg) => {
       return sum(compact(arg))
     },
