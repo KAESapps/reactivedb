@@ -27,11 +27,20 @@ module.exports = (dirPath, { writePatches = true } = {}) => {
   const data = new Map()
   let noDeltaEntries = false
   const currentPath = path.join(dirPath, "current")
+  const statePathTemp = path.join(dirPath, "current", "stateTmp")
   const statePath = path.join(dirPath, "current", "state")
   const deltaPath = path.join(dirPath, "current", "delta")
   const patchesPath = path.join(dirPath, "current", "patches")
   return fs
     .ensureDir(path.join(dirPath, "current"))
+    .then(() =>
+      fs.pathExists(statePathTemp).then((stateTmpExists) => {
+        if (stateTmpExists) {
+          log.error("stateTmp exists") //un state temporaire existe (potentiellement partiel lié à un démarrage précédent échoué)
+          throw new Error("stateTmp exists")
+        }
+      })
+    )
     .then(
       // load current state file
       monitor("read state file", () =>
@@ -109,15 +118,16 @@ module.exports = (dirPath, { writePatches = true } = {}) => {
         ).then(() => fs.remove(currentPath))
       })
     )
-    .then(() => pRetry(() => fs.ensureFile(statePath))) // parfois (sur windows, on a une erreur "EPERM: operation not permitted" et il faut attendre un peu
+    .then(() => pRetry(() => fs.ensureFile(statePathTemp))) // parfois (sur windows, on a une erreur "EPERM: operation not permitted" et il faut attendre un peu
     .then(
       // save current state (only if there was delta entries)
+      //d'abord dans un fichier temporaire que l'on renommera après (permet de détecter si l'écriture est interrompue)
       monitor("save current state", () => {
         if (env === "dev" || noDeltaEntries) return Promise.resolve()
         let count = 0
 
         const rs = Readable()
-        const ws = fs.createWriteStream(statePath)
+        const ws = fs.createWriteStream(statePathTemp)
         rs.pipe(ws)
         const entries = data.entries()
         rs._read = () => {
@@ -139,6 +149,7 @@ module.exports = (dirPath, { writePatches = true } = {}) => {
         })
       })
     )
+    .then(() => fs.move(statePathTemp, statePath))
     .then(() => writePatches && fs.ensureDir(patchesPath))
     .then(() => {
       const store = epvStore(data)
