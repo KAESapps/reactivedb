@@ -252,6 +252,9 @@ const match = (filter, pv) =>
         if (op === "lte") {
           return v <= opValue
         }
+        if (op === "includes") {
+          return includes(v, opValue)
+        }
       })
     } else {
       return v === propFilter
