@@ -30,8 +30,6 @@ module.exports = (store) => {
       })
       if (p.patch && Object.keys(p.patch).length) {
         store.patch(p.patch, metadata)
-      } else {
-        log.warn("empty patch")
       }
       return { res: p.res } // on ne retourne pas le patch qui est plutôt de l'implémentation interne (et peut être un peu lourd parfois)
     } else {
@@ -53,7 +51,12 @@ module.exports = (store) => {
     const ret = Array.isArray(arg) ? store.query(arg) : arg
     // TODO: on ne retourne un promise que si la création du patch est asynchrone car sinon ça casse la synchro mobile.... pas terrible !!!
     return ret && ret.then
-      ? ret.then((p) => handleRet(p, arg, metadata))
+      ? ret
+          .then((p) => handleRet(p, arg, metadata))
+          .catch((err) => {
+            log.error("patching error", { arg, metadata }, err)
+            return { err: err + "" }
+          })
       : handleRet(ret, arg, metadata)
   }
 
