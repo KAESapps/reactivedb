@@ -173,3 +173,11 @@ exports.mergePatches = (target, source) => {
   })
   return target
 }
+
+exports.kkvSize = (kkv) => {
+  let count = 0
+  forEach(kkv, (kv) => {
+    count = count + Object.keys(kv).length
+  })
+  return count
+}
