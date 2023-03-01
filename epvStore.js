@@ -1,6 +1,6 @@
 const log = require("./log")
 const { transaction, Obs } = require("kobs") // on utilise Obs directement plutôt que observable car ça évite des closures inutiles, ça permet de bypasser le getter quand on n'a pas besoin de s'abonner à l'observable et de toute façon les observables ne sont pas exposés au public
-const isObservable = o => o && o.get
+const isObservable = (o) => o && o.get
 const forEach = require("lodash/forEach")
 const mapValues = require("lodash/mapValues")
 const includes = require("lodash/includes")
@@ -12,13 +12,21 @@ const isUndefined = require("lodash/isUndefined")
 const isObjectLike = require("lodash/isObjectLike")
 const update = require("lodash/update")
 const without = require("lodash/without")
+const { Sia, constructors } = require("sializer")
+const siaOpts = {
+  constructors: constructors.concat({
+    constructor: Obs,
+    code: 1,
+    args: (item) => item.value,
+  }),
+}
 
-const isValidPatch = patch =>
+const isValidPatch = (patch) =>
   every(patch, (v, k) => {
     return typeof k === "string" && k.length && typeof v === "object"
   })
 
-const addToArray = v => a => {
+const addToArray = (v) => (a) => {
   if (a) {
     a.push(v)
     return a
@@ -27,19 +35,21 @@ const addToArray = v => a => {
   }
 }
 
-const updateVePatch = ({ value, addRemove, entity }) => veMap => {
-  if (!veMap) {
-    return new Map([[value, { [addRemove]: [entity] }]])
-  }
+const updateVePatch =
+  ({ value, addRemove, entity }) =>
+  (veMap) => {
+    if (!veMap) {
+      return new Map([[value, { [addRemove]: [entity] }]])
+    }
 
-  let vObject = veMap.get(value)
-  if (!vObject) {
-    vObject = {}
-    veMap.set(value, vObject)
+    let vObject = veMap.get(value)
+    if (!vObject) {
+      vObject = {}
+      veMap.set(value, vObject)
+    }
+    update(vObject, addRemove, addToArray(entity))
+    return veMap
   }
-  update(vObject, addRemove, addToArray(entity))
-  return veMap
-}
 
 const updatePvePatch = (pvePatch, { prop, value, addRemove, entity }) => {
   update(pvePatch, prop, updateVePatch({ value, addRemove, entity }))
@@ -262,7 +272,8 @@ const match = (filter, pv) =>
   })
 
 // teste si le patch peut avoir un impact sur le résultat du filtre
-const quickMatch = (filter, patch) => Object.keys(filter).some(k => k in patch)
+const quickMatch = (filter, patch) =>
+  Object.keys(filter).some((k) => k in patch)
 
 const patchMatchingResults = (store, epvPatch, epv) => {
   store.forEach((matchingResult, serializedFilter) => {
@@ -322,7 +333,7 @@ module.exports = (epv) => {
     return pValue.get()
   }
   // retourne une liste non réactive des props d'une entité (pour le besoin de générer un patch pour la supprimer)
-  const getFromE_pv = e => {
+  const getFromE_pv = (e) => {
     const ret = {}
     let eMap = epv.get(e)
     if (!eMap) return ret
@@ -332,7 +343,7 @@ module.exports = (epv) => {
     })
     return ret
   }
-  const createPatchToRemoveAllPropsOf = e => {
+  const createPatchToRemoveAllPropsOf = (e) => {
     const pv = getFromE_pv(e)
     return mapValues(pv, () => null)
   }
@@ -355,7 +366,7 @@ module.exports = (epv) => {
   }
   // crée un groupByValue de façon lazy pour une prop
   const p_ve = new Map()
-  const getFromP_ve = p => {
+  const getFromP_ve = (p) => {
     let group = p_ve.get(p)
     if (!group) {
       group = new Obs(
@@ -370,7 +381,7 @@ module.exports = (epv) => {
   }
   // crée à la demande un observable par propriété contenant un objet ev
   const p_ev = new Map()
-  const getFromP_ev = p => {
+  const getFromP_ev = (p) => {
     let group = p_ev.get(p)
     if (!group) {
       group = new Obs(
@@ -386,7 +397,7 @@ module.exports = (epv) => {
 
   // crée une liste d'entités de façon lazy positives à un filtre
   const matchingResults = new Map()
-  const getEntitiesMatching = filter => {
+  const getEntitiesMatching = (filter) => {
     const serializedFilter = JSON.stringify(filter)
     let result = matchingResults.get(serializedFilter)
     if (!result) {
@@ -402,6 +413,7 @@ module.exports = (epv) => {
   }
 
   const backup = () => {
+    console.time("backupJson")
     const data = {}
     epv.forEach((pv, e) => {
       const itemData = {}
@@ -410,12 +422,22 @@ module.exports = (epv) => {
       })
       data[e] = itemData
     })
-    return data
+    const json = JSON.stringify(data)
+    console.timeEnd("backupJson")
+    return json
+  }
+
+  const backupBinary = () => {
+    console.time("backupSia")
+    const buffer = new Sia(siaOpts).serialize(epv)
+    console.timeEnd("backupSia")
+    return buffer
   }
 
   return {
     data: epv,
     backup,
+    backupBinary,
     createPatchToRemoveAllPropsOf,
     getFromE_pv, // à usage de dbAdmin seulement
     getFromEpv,
@@ -423,7 +445,7 @@ module.exports = (epv) => {
     getFromP_ve,
     getFromP_ev,
     getEntitiesMatching,
-    patch: patch => {
+    patch: (patch) => {
       if (!isValidPatch(patch)) {
         console.error("invalidPatch", patch)
         return

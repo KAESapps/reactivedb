@@ -11,7 +11,7 @@ module.exports = (store, conn) => {
       if (isPromise(res)) {
         res.then(
           (v) => send({ callId, res: v }),
-          (err) => send({ callId, err: err ? err.toString() : "error" })
+          (err) => send({ callId, err: err ? err + "" : "error" })
         )
       } else {
         send({ callId, res })
