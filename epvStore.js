@@ -12,14 +12,6 @@ const isUndefined = require("lodash/isUndefined")
 const isObjectLike = require("lodash/isObjectLike")
 const update = require("lodash/update")
 const without = require("lodash/without")
-const { Sia, constructors } = require("sializer")
-const siaOpts = {
-  constructors: constructors.concat({
-    constructor: Obs,
-    code: 1,
-    args: (item) => item.value,
-  }),
-}
 
 const isValidPatch = (patch) =>
   every(patch, (v, k) => {
@@ -427,17 +419,9 @@ module.exports = (epv) => {
     return json
   }
 
-  const backupBinary = () => {
-    console.time("backupSia")
-    const buffer = new Sia(siaOpts).serialize(epv)
-    console.timeEnd("backupSia")
-    return buffer
-  }
-
   return {
     data: epv,
     backup,
-    backupBinary,
     createPatchToRemoveAllPropsOf,
     getFromE_pv, // à usage de dbAdmin seulement
     getFromEpv,

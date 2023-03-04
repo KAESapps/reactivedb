@@ -34,8 +34,7 @@
     "match-sorter": "4.0.2",
     "p-retry": "4.6.1",
     "sanitize-filename": "1.6.3",
-    "shortid": "2.2.16",
-    "sializer": "0.2.0"
+    "shortid": "2.2.16"
   },
   "prettier": {
     "trailingComma": "es5",
