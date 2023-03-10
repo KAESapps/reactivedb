@@ -405,7 +405,7 @@ module.exports = (epv) => {
   }
 
   const backup = () => {
-    console.time("backupJson")
+    console.time("backup")
     const data = {}
     epv.forEach((pv, e) => {
       const itemData = {}
@@ -414,6 +414,12 @@ module.exports = (epv) => {
       })
       data[e] = itemData
     })
+    console.timeEnd("backup")
+    return data
+  }
+  const backupJson = () => {
+    console.time("backupJson")
+    const data = backup()
     const json = JSON.stringify(data)
     console.timeEnd("backupJson")
     return json
@@ -422,6 +428,7 @@ module.exports = (epv) => {
   return {
     data: epv,
     backup,
+    backupJson,
     createPatchToRemoveAllPropsOf,
     getFromE_pv, // à usage de dbAdmin seulement
     getFromEpv,
