@@ -177,6 +177,7 @@ module.exports = pPipe([
       patch: patchAndSave,
       persisting,
       clearAllData: () => dbCall(db, clear),
+      setData: data => createNewStore(db, data, stores),//attention, le memoryStore n'est pas modifié : c'est uniquement pour le restore et il faut recharger l'appli après
       persistenceError,
     })
   },

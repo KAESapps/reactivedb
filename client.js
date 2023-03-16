@@ -120,6 +120,7 @@ module.exports = (rawClientArg, authenticatedUser) => {
     watch,
     watch2,
     clearLocalData: () => rawClientObs().call("clearLocalData"),
+    loadBackup: (data) => rawClientObs().call("loadBackup", data),
     close: proxyRawMethod("close"),
     onDisconnect,
     query: (q) => watch("query", q),
