@@ -17,6 +17,8 @@ const pickBy = require("lodash/pickBy")
 const find = require("lodash/find")
 const map = require("lodash/map")
 const concat = require("lodash/concat")
+const split = require("lodash/split")
+const join = require("lodash/join")
 const mapValues = require("lodash/mapValues")
 const mapKeys = require("lodash/mapKeys")
 const reverse = require("lodash/reverse")
@@ -169,8 +171,8 @@ module.exports = (store) => {
       Array.isArray(v1)
         ? v1.concat(operators.query(exp))
         : v1 + operators.query(exp),
-    split: (string, sep) => string && string.split(sep),
-    join: (strings, sep) => strings.join(sep),
+    split: (string, sep) => split(string, sep),
+    join: (strings, sep) => join(strings, sep),
     isDefined: (v) => v != null,
     isEmpty: (v) => (Array.isArray(v) ? v.length === 0 : v == null),
     default: (value, defaultValue) => (value == null ? defaultValue : value),
