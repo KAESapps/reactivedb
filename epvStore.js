@@ -257,6 +257,9 @@ const match = (filter, pv) =>
         if (op === "includes") {
           return includes(v, opValue)
         }
+        if (op === "oneOf") {
+          return includes(opValue, v)
+        }
       })
     } else {
       return v === propFilter
