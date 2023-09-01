@@ -1,4 +1,3 @@
-const env = process.env.NODE_ENV || "dev"
 const archive = require("./archive")
 const fs = require("fs-extra")
 const path = require("path")
@@ -22,7 +21,7 @@ const monitor = (timeLabel, task) => () => {
   })
 }
 
-module.exports = (dirPath, { writePatches = true } = {}) => {
+module.exports = (dirPath, { writePatches = true, disableArchive } = {}) => {
   // auto load
   const data = new Map()
   let noDeltaEntries = false
@@ -106,7 +105,7 @@ module.exports = (dirPath, { writePatches = true } = {}) => {
       // archive current files (only if there was delta entries)
       //en dev on bypass l'archivage pour démarrer plus vite
       monitor("archive current files", () => {
-        if (env === "dev" || noDeltaEntries) return Promise.resolve()
+        if (disableArchive || noDeltaEntries) return Promise.resolve()
         return archive(
           currentPath,
           path.join(
@@ -122,7 +121,7 @@ module.exports = (dirPath, { writePatches = true } = {}) => {
       // parfois (sur windows, on a une erreur "EPERM: operation not permitted" et il faut attendre un peu
       pRetry(() =>
         fs.ensureFile(
-          env === "dev" || noDeltaEntries ? statePath : statePathTemp
+          disableArchive || noDeltaEntries ? statePath : statePathTemp
         )
       )
     )
@@ -130,7 +129,7 @@ module.exports = (dirPath, { writePatches = true } = {}) => {
       // save current state (only if there was delta entries)
       //d'abord dans un fichier temporaire que l'on renommera après (permet de détecter si l'écriture est interrompue)
       monitor("save current state", () => {
-        if (env === "dev" || noDeltaEntries) return Promise.resolve()
+        if (disableArchive || noDeltaEntries) return Promise.resolve()
         let count = 0
 
         const rs = Readable()
@@ -165,7 +164,7 @@ module.exports = (dirPath, { writePatches = true } = {}) => {
       // on ouvre une stream en écriture sur le fichier delta qui doit être vide
       const ws = fs.createWriteStream(
         deltaPath,
-        env === "dev" ? { flags: "a" } : undefined
+        disableArchive ? { flags: "a" } : undefined
       )
       ws.on("error", (err) =>
         log.error("Erreur de sauvegarde des données", err)
