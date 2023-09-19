@@ -69,7 +69,8 @@ const logComputed =
 
 module.exports = (store) => {
   const operators = {
-    getPvOf: (id) => store.getFromE_pv(id),
+    getPvOf: (id) => store.getFromE_pv(id), // à usage interne/spécifique seulement
+    forEachTriplet: (cb) => store.forEachTriplet(cb), // à usage interne/spécifique seulement
     patchToRemoveAllPropsOf: (id) => ({
       [id]: store.createPatchToRemoveAllPropsOf(id),
     }),
@@ -89,8 +90,7 @@ module.exports = (store) => {
       }
       return store.getEntitiesMatching(filter)
     },
-    findEntityMatching: (filter) =>
-      operators.query([{ entitiesMatching: filter }, "first"]), // à remplacer par un appel à entitiesByValueOfProps
+    findEntityMatching: (filter) => first(operators.entitiesMatching(filter)), // à remplacer par un appel à entitiesByValueOfProps
     entitiesWithValue: (prop, value) => store.getFromPve(prop, value),
     entityWithValue: (prop, value) => last(store.getFromPve(prop, value)),
     entitiesWithProp: (value, prop) => store.getFromPve(prop, value),

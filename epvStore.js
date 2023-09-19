@@ -89,6 +89,17 @@ const groupEntitiesByValueOfProp = (epv, prop) => {
   })
   return group
 }
+
+const forEachTriplet = (epv, cb) => {
+  epv.forEach((pv, e) => {
+    pv.forEach((v, p) => {
+      if (v == null) return
+      if (isObservable(v)) v = v.value //observable
+      if (v == null) return
+      cb(e, p, v)
+    })
+  })
+}
 const collectEntitiesAndValueOfProp = (epv, prop) => {
   const entities = {}
   epv.forEach((e, k) => {
@@ -434,6 +445,7 @@ module.exports = (epv) => {
     backupJson,
     createPatchToRemoveAllPropsOf,
     getFromE_pv, // à usage de dbAdmin seulement
+    forEachTriplet: cb=>forEachTriplet(epv, cb), // à usage interne/spécifique seulement
     getFromEpv,
     getFromPve,
     getFromP_ve,
