@@ -38,6 +38,7 @@ const createWatch = (rawClientObs, suffix) => {
 
   // relaunch watched queries for each new rawClient
   observeSync(rawClientObs, (rawClient) => {
+    if (!rawClient) return
     queriesCache.forEach((obs, watchId) => {
       const { method, arg } = JSON.parse(watchId)
       startWatching(rawClient, watchId, method, arg, obs, suffix)
