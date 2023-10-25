@@ -3,7 +3,7 @@ const isFunction = require("lodash/isFunction")
 const get = require("lodash/get")
 const each = require("lodash/each")
 const { Obs, observable, observeSync } = require("kobs")
-const unwatchDelay = 1000 * 60 * 2 // server unwatch is called if UI is not observing during 2 minutes
+const unwatchDelay = /* 1000 * 60 * */ 2 // server unwatch is called if UI is not observing during 2 minutes
 const invalidQuery = new Error("invalid-query")
 const validateQuery = (q) => {
   if (!q) throw invalidQuery
@@ -54,10 +54,14 @@ const createWatch = (rawClientObs, suffix) => {
     }
     if (!obs) {
       const unwatch = () => {
-        const unwatchFn = rawClientObs()[suffix ? "unwatch2" : "unwatch"]
-        unwatchFn({ watchId }).catch((err) => {
-          console.error("Error stopping to watch", method, arg, err)
-        })
+        const rawClient = rawClientObs()
+        if (!rawClient.closed) {
+          //si la connection est tombée, ça ne sert à rien de demander un désabonnement (normalement le serveur l'a déjà fait de son côté)
+          const unwatchFn = rawClient[suffix ? "unwatch2" : "unwatch"]
+          unwatchFn({ watchId }).catch((err) => {
+            console.error("Error stopping to watch", method, arg, err)
+          })
+        }
         queriesCache.delete(watchId)
         pendingUnwatch.delete(watchId)
         //console.log("unwatched query", q)

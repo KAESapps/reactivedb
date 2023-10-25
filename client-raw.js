@@ -1,11 +1,11 @@
 const shortid = require("shortid")
 
-module.exports = conn => {
+module.exports = (conn) => {
   const timestamp = Date.now() // pour du debug
   const resolvers = new Map()
   const listeners = new Map()
 
-  conn.onmessage(data => {
+  conn.onmessage((data) => {
     // console.debug("raw client message", timestamp)
     if (data.callId) {
       const resolver = resolvers.get(data.callId)
@@ -39,9 +39,9 @@ module.exports = conn => {
       })
     })
 
-  const patch = p => call("patch", p)
-  const query = p => call("query", p)
-  const query2 = p => call("query2", p)
+  const patch = (p) => call("patch", p)
+  const query = (p) => call("query", p)
+  const query2 = (p) => call("query2", p)
 
   const watch = (arg, listener) => {
     listeners.set(arg.watchId, listener)
@@ -51,26 +51,20 @@ module.exports = conn => {
     listeners.set(arg.watchId, listener)
     return call("watch2", arg)
   }
-  const unwatch = arg => {
+  const unwatch = (arg) => {
     listeners.delete(arg.watchId)
     return call("unwatch", arg)
   }
-  const unwatch2 = arg => {
+  const unwatch2 = (arg) => {
     listeners.delete(arg.watchId)
     return call("unwatch2", arg)
   }
 
-  const close = () => {
-    conn.close()
-    //TODO: vider les registres ?
-  }
-  const onDisconnect = cb => {
-    conn.onclose = err => {
-      if (!err.wasClean) cb()
-    }
+  const onDisconnect = (cb) => {
+    conn.onDisconnect(cb)
   }
 
-  return {
+  const rawClient = {
     watch,
     watch2,
     unwatch,
@@ -79,8 +73,15 @@ module.exports = conn => {
     query2,
     call,
     patch,
-    close,
     onDisconnect,
     timestamp,
   }
+
+  rawClient.close = () => {
+    conn.close()
+    rawClient.closed = true
+    //TODO: vider les registres ?
+  }
+
+  return rawClient
 }
