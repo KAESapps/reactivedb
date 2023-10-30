@@ -3,7 +3,7 @@ const isFunction = require("lodash/isFunction")
 const get = require("lodash/get")
 const each = require("lodash/each")
 const { Obs, observable, observeSync } = require("kobs")
-const unwatchDelay = /* 1000 * 60 * */ 2 // server unwatch is called if UI is not observing during 2 minutes
+const unwatchDelay = 1000 * 60 * 2 // server unwatch is called if UI is not observing during 2 minutes
 const invalidQuery = new Error("invalid-query")
 const validateQuery = (q) => {
   if (!q) throw invalidQuery
