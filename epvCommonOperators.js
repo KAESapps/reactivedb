@@ -156,9 +156,12 @@ module.exports = (store) => {
     uniqueBy: (arr, exp) =>
       uniqBy(arr, (v) => operators.query(concat({ constant: v }, exp))),
     round,
+    roundMultiple: (v, precision) => round(v / precision) * precision,
     floor,
+    floorMultiple: (v, precision) => floor(v / precision) * precision,
     roundDown: floor,
     ceil,
+    ceilMultiple: (v, precision) => ceil(v / precision) * precision,
     roundUp: ceil,
     padStart: (s, arg) => {
       if (typeof arg === "number") return padStart(s, arg)
