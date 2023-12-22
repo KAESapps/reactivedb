@@ -71,9 +71,12 @@ module.exports = (store) => {
   const operators = {
     getPvOf: (id) => store.getFromE_pv(id), // à usage interne/spécifique seulement
     forEachTriplet: (cb) => store.forEachTriplet(cb), // à usage interne/spécifique seulement
-    patchToRemoveAllPropsOf: (id) => ({
-      [id]: store.createPatchToRemoveAllPropsOf(id),
-    }),
+    patchToRemoveAllPropsOf: (id) =>
+      id
+        ? {
+            [id]: store.createPatchToRemoveAllPropsOf(id),
+          }
+        : {},
     entityRemovePatch: (entityId) =>
       store.createPatchToRemoveAllPropsOf(entityId),
     entitiesRemovePatch: (ids) =>
