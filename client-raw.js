@@ -22,7 +22,7 @@ module.exports = (conn) => {
     if (data.watchId) {
       const listener = listeners.get(data.watchId)
       if (!listener) {
-        return console.error("no listener for message", data)
+        return console.warn("no listener for message", data.watchId) //on ne log pas data.value qui peut être très gros
       }
       return listener(data.value)
     }
