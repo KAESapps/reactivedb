@@ -47,6 +47,8 @@ const padStart = require("lodash/padStart")
 const matchSorter = require("match-sorter").default
 const localeIndexOf = require("locale-index-of")(Intl)
 const formatISO = require("date-fns/formatISO")
+const getISOWeek = require("date-fns/getISOWeek")
+const getISOWeekYear = require("date-fns/getISOWeekYear")
 const cartesian = require("cartesian")
 const obsMemoize = require("./obsMemoize")
 const formatInteger = require("./operators/formatInteger")
@@ -354,6 +356,11 @@ module.exports = (store) => {
       isoDateTime
         ? formatISO(new Date(isoDateTime), { representation: "date" })
         : null,
+    isoDateTimeToWeek: (isoDateTime) => {
+      if (!isoDateTime) return null
+      const date = new Date(isoDateTime)
+      return `${getISOWeekYear(date)}W${getISOWeek(date)}`
+    },
     isoDateTimeToMonth: (isoDateTime) =>
       isoDateTime
         ? formatISO(new Date(isoDateTime), { representation: "date" }).slice(
