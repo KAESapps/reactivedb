@@ -233,7 +233,7 @@ module.exports = (store) => {
     mapBy: (ids, exp) =>
       map(ids, (id) => operators.query([{ constant: id }].concat(exp))),
     // crée un objet avec les valeurs du array en key and value
-    arrayToObject: (arr) => arr.reduce((acc, id) => set(acc, id, id), {}),
+    arrayToObject: (arr) => reduce(arr, (acc, id) => set(acc, id, id), {}),
     mapObjectBy: (obj, exp) =>
       mapValues(obj, (id) => operators.query([{ constant: id }].concat(exp))),
     mapKeysBy: (obj, exp) =>
