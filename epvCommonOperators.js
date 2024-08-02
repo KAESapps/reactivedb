@@ -118,7 +118,7 @@ module.exports = (store) => {
     sum: (arg) => {
       return sum(compact(arg))
     },
-    mean,
+    mean: (values) => mean(filter(values, (v) => v != null)),
     min,
     max,
     compact,
