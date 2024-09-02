@@ -70,6 +70,8 @@ const logComputed =
       }
     : (fn) => fn
 
+const compareFr = new Intl.Collator("fr", { sensitivity: "base" }).compare
+
 module.exports = (store) => {
   const operators = {
     getPvOf: (id) => store.getFromE_pv(id), // à usage interne/spécifique seulement
@@ -219,6 +221,11 @@ module.exports = (store) => {
     },
     sortBy: (ids, exp) =>
       sortBy(ids, (id) => operators.query([{ constant: id }].concat(exp))),
+    localeSortBy: (ids, exp) => {
+      if (!ids || !ids.sort) return null
+      const mapBy = (id) => operators.query([{ constant: id }].concat(exp))
+      return ids.sort((a, b) => compareFr(mapBy(a), mapBy(b)))
+    },
     orderBy: (ids, arg) => {
       const { mappers, orders } = arg
       return orderBy(
