@@ -12,6 +12,7 @@ const isUndefined = require("lodash/isUndefined")
 const isObjectLike = require("lodash/isObjectLike")
 const update = require("lodash/update")
 const without = require("lodash/without")
+const toString = require("lodash/toString")
 
 const isValidPatch = (patch) =>
   every(patch, (v, k) => {
@@ -271,6 +272,9 @@ const match = (filter, pv) =>
         if (op === "oneOf") {
           return includes(opValue, v)
         }
+        if (op === "toString") {
+          return toString(v) === opValue
+        }
       })
     } else {
       return v === propFilter
@@ -445,7 +449,7 @@ module.exports = (epv) => {
     backupJson,
     createPatchToRemoveAllPropsOf,
     getFromE_pv, // à usage de dbAdmin seulement
-    forEachTriplet: cb=>forEachTriplet(epv, cb), // à usage interne/spécifique seulement
+    forEachTriplet: (cb) => forEachTriplet(epv, cb), // à usage interne/spécifique seulement
     getFromEpv,
     getFromPve,
     getFromP_ve,
