@@ -475,17 +475,20 @@ module.exports = (store) => {
       const { searchValue, mapBy, keys } = arg
 
       // map source items
-      const items = source.map((item) => ({
+      const items = map(source, (item) => ({
         sourceItem: item,
         sortingValue: operators.query([{ constant: item }].concat(mapBy)),
       }))
 
       // sort items, and return sorted source items back
-      return matchSorter(items, searchValue, {
-        keys: keys
-          ? keys.map((k) => (i) => i.sortingValue[k])
-          : [(i) => i.sortingValue],
-      }).map((i) => i.sourceItem)
+      return map(
+        matchSorter(items, searchValue, {
+          keys: keys
+            ? map(keys, (k) => (i) => i.sortingValue[k])
+            : [(i) => i.sortingValue],
+        }),
+        (i) => i.sourceItem
+      )
     },
     toCsvCell: (v) => {
       if (v == null) return "" //null or undefined
