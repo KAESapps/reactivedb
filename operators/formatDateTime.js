@@ -14,7 +14,7 @@ module.exports = (n, options = {}) => {
   if (options.precision) {
     if (options.precision === "week") {
       // traitement à part pour la précision semaine
-      return format(parseISO(n), "'S'II-yyyy")
+      return format(parseISO(n), "'S'II-RRRR")
     } else {
       const precisionAtLeast = datePrecisionAtLeast(options.precision)
       options = assign(
