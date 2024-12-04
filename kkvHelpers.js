@@ -99,24 +99,39 @@ const cloneObject = (exports.clone = (source) => {
 // renvoi un patch à appliquer sur source pour obtenir target
 // source et target sont des plain objects et non pas des maps
 exports.diff = (source, target) => {
-  const patch = cloneObject(target)
-  // on supprime du clone toutes les valeurs identiques à la source et on met à null, celles qui ont été supprimées
-  forEach(source, (kv, k1) => {
-    forEach(kv, (v, k2) => {
-      const sourceValue = getObject(source, k1, k2)
-      if (sourceValue == null) return // si la valeur est null ou undefined on n'en tient pas compte
+  const patch = Object.create(null)
+
+  //d'abord on itère qur target pour mettre dans le patch tous les triplets qui ont été ajoutés ou modifiés par rapport à la source
+  // console.time("kkvDiffAdd")
+  for (const k1 in target) {
+    const targetKv = target[k1]
+    //optimisation : si le kv dans target est identique à source par référence, il n'y a pas besoin de le mettre dans le diff
+    if (source[k1] === targetKv) continue
+    for (const k2 in targetKv) {
+      const targetValue = targetKv[k2]
+      if (targetValue == null) continue // on ne tient pas compte des null/undefined dans target
+      if (targetValue === getObject(source, k1, k2)) continue // si la valeur dans target est identique à source, on ne la met pas dans le diff
+      setObject(patch, k1, k2, targetValue) //triplet ajouté/modifié dans target par rapport à source
+    }
+  }
+  // console.timeEnd("kkvDiffAdd")
+
+  // puis on itère sur source pour déterminer les triplets qui ont été supprimés
+  // console.time("kkvDiffRemove")
+  for (const k1 in source) {
+    const sourceKv = source[k1]
+    //optimisation: si les kv sont identiques par référence, c'est qu'il n'y a pas eu de modif donc on peut prendre un raccourci
+    if (target[k1] === sourceKv) continue
+    for (const k2 in sourceKv) {
+      const sourceValue = sourceKv[k2]
+      if (sourceValue == null) continue // si la valeur est null ou undefined on n'en tient pas compte
       const targetValue = getObject(target, k1, k2)
       // cas d'une valeur supprimée
-      if (targetValue == null) {
-        setObject(patch, k1, k2, null)
-        return
-      }
-      // cas d'une valeur identique
-      if (sourceValue === targetValue) {
-        unsetObject(patch, k1, k2)
-      }
-    })
-  })
+      if (targetValue == null) setObject(patch, k1, k2, null)
+    }
+  }
+  // console.timeEnd("kkvDiffRemove")
+
   return patch
 }
 

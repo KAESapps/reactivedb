@@ -12,6 +12,7 @@ const uniqBy = require("lodash/uniqBy")
 const includes = require("lodash/includes")
 const filter = require("lodash/filter")
 const compact = require("lodash/compact")
+const reduce = require("lodash/reduce")
 const groupBy = require("lodash/groupBy")
 const pickBy = require("lodash/pickBy")
 const find = require("lodash/find")
@@ -47,6 +48,8 @@ const padStart = require("lodash/padStart")
 const matchSorter = require("match-sorter").default
 const localeIndexOf = require("locale-index-of")(Intl)
 const formatISO = require("date-fns/formatISO")
+const getISOWeek = require("date-fns/getISOWeek")
+const getISOWeekYear = require("date-fns/getISOWeekYear")
 const cartesian = require("cartesian")
 const obsMemoize = require("./obsMemoize")
 const formatInteger = require("./operators/formatInteger")
@@ -67,13 +70,18 @@ const logComputed =
       }
     : (fn) => fn
 
+const compareFr = new Intl.Collator("fr", { sensitivity: "base" }).compare
+
 module.exports = (store) => {
   const operators = {
     getPvOf: (id) => store.getFromE_pv(id), // à usage interne/spécifique seulement
     forEachTriplet: (cb) => store.forEachTriplet(cb), // à usage interne/spécifique seulement
-    patchToRemoveAllPropsOf: (id) => ({
-      [id]: store.createPatchToRemoveAllPropsOf(id),
-    }),
+    patchToRemoveAllPropsOf: (id) =>
+      id
+        ? {
+            [id]: store.createPatchToRemoveAllPropsOf(id),
+          }
+        : {},
     entityRemovePatch: (entityId) =>
       store.createPatchToRemoveAllPropsOf(entityId),
     entitiesRemovePatch: (ids) =>
@@ -104,6 +112,9 @@ module.exports = (store) => {
       return arguments.length === 2 ? v2 : v1
     }, // dans le cas où il y a une source, constant est appelé avec 2 args mais c'est le 2ème qui compte
     typeof: (v) => typeof v,
+    callOperator: (args, operator) => {
+      return operators[operator](args[0], args[1])
+    },
     get: (v, prop) => get(v, prop),
     first,
     last,
@@ -112,7 +123,7 @@ module.exports = (store) => {
     sum: (arg) => {
       return sum(compact(arg))
     },
-    mean,
+    mean: (values) => mean(filter(values, (v) => v != null)),
     min,
     max,
     compact,
@@ -156,9 +167,12 @@ module.exports = (store) => {
     uniqueBy: (arr, exp) =>
       uniqBy(arr, (v) => operators.query(concat({ constant: v }, exp))),
     round,
+    roundMultiple: (v, precision) => round(v / precision) * precision,
     floor,
+    floorMultiple: (v, precision) => floor(v / precision) * precision,
     roundDown: floor,
     ceil,
+    ceilMultiple: (v, precision) => ceil(v / precision) * precision,
     roundUp: ceil,
     padStart: (s, arg) => {
       if (typeof arg === "number") return padStart(s, arg)
@@ -210,6 +224,11 @@ module.exports = (store) => {
     },
     sortBy: (ids, exp) =>
       sortBy(ids, (id) => operators.query([{ constant: id }].concat(exp))),
+    localeSortBy: (ids, exp) => {
+      if (!ids || !ids.sort) return null
+      const mapBy = (id) => operators.query([{ constant: id }].concat(exp))
+      return ids.sort((a, b) => compareFr(mapBy(a), mapBy(b)))
+    },
     orderBy: (ids, arg) => {
       const { mappers, orders } = arg
       return orderBy(
@@ -225,7 +244,7 @@ module.exports = (store) => {
     mapBy: (ids, exp) =>
       map(ids, (id) => operators.query([{ constant: id }].concat(exp))),
     // crée un objet avec les valeurs du array en key and value
-    arrayToObject: (arr) => arr.reduce((acc, id) => set(acc, id, id), {}),
+    arrayToObject: (arr) => reduce(arr, (acc, id) => set(acc, id, id), {}),
     mapObjectBy: (obj, exp) =>
       mapValues(obj, (id) => operators.query([{ constant: id }].concat(exp))),
     mapKeysBy: (obj, exp) =>
@@ -348,6 +367,11 @@ module.exports = (store) => {
       isoDateTime
         ? formatISO(new Date(isoDateTime), { representation: "date" })
         : null,
+    isoDateTimeToWeek: (isoDateTime) => {
+      if (!isoDateTime) return null
+      const date = new Date(isoDateTime)
+      return `${getISOWeekYear(date)}W${getISOWeek(date)}`
+    },
     isoDateTimeToMonth: (isoDateTime) =>
       isoDateTime
         ? formatISO(new Date(isoDateTime), { representation: "date" }).slice(
@@ -451,17 +475,20 @@ module.exports = (store) => {
       const { searchValue, mapBy, keys } = arg
 
       // map source items
-      const items = source.map((item) => ({
+      const items = map(source, (item) => ({
         sourceItem: item,
         sortingValue: operators.query([{ constant: item }].concat(mapBy)),
       }))
 
       // sort items, and return sorted source items back
-      return matchSorter(items, searchValue, {
-        keys: keys
-          ? keys.map((k) => (i) => i.sortingValue[k])
-          : [(i) => i.sortingValue],
-      }).map((i) => i.sourceItem)
+      return map(
+        matchSorter(items, searchValue, {
+          keys: keys
+            ? map(keys, (k) => (i) => i.sortingValue[k])
+            : [(i) => i.sortingValue],
+        }),
+        (i) => i.sourceItem
+      )
     },
     toCsvCell: (v) => {
       if (v == null) return "" //null or undefined
