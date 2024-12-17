@@ -116,6 +116,7 @@ module.exports = (store) => {
       return operators[operator](args[0], args[1])
     },
     get: (v, prop) => get(v, prop),
+    set: (o, { path, value }) => set(o, path, value),
     first,
     last,
     flatten,
