@@ -9,7 +9,7 @@ const LDJSONStream = require("ld-jsonstream")
 const streamOfStreams = require("./streamOfStreams")
 const Readable = require("stream").Readable
 const gracefulExit = require("./gracefulExit")
-const pRetry = require("p-retry")
+const pRetry = require("p-retry").default
 const log = require("./log").sub("epvPersistentStream")
 
 const monitor = (timeLabel, task) => () => {
