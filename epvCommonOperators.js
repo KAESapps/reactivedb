@@ -256,6 +256,10 @@ module.exports = (store) => {
       const sources = operators.query(arg2 ? arg2 : arg1)
       return Object.assign.apply(null, concat(target, sources))
     },
+    mergeExp: (o, exp) => {
+      const source = operators.query([{ constant: o }].concat(exp))
+      return merge(o, source)
+    },
     merge: (sources) => merge({}, ...sources),
     each: (v, exps) => {
       let mapExp
