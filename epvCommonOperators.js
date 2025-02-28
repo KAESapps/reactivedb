@@ -368,6 +368,14 @@ module.exports = (store) => {
       if (!date || !date.concat || !time) return
       return date.concat("T", time)
     },
+    // on obtient un time dans la time zone locale et on perd le décalage horaire
+    isoDateTimeToTime: (isoDateTime) =>
+      isoDateTime
+        ? formatISO(new Date(isoDateTime), { representation: "time" }).slice(
+            0,
+            8
+          )
+        : null,
     isoDateTimeToDate: (isoDateTime) =>
       isoDateTime
         ? formatISO(new Date(isoDateTime), { representation: "date" })
