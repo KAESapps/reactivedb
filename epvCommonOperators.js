@@ -57,6 +57,7 @@ const formatDecimal = require("./operators/formatDecimal")
 const formatCurrency = require("./operators/formatCurrency")
 const formatDate = require("./operators/formatDate")
 const formatDateTime = require("./operators/formatDateTime")
+const isoDateTimeToDate = require("./operators/isoDateTimeToDate")
 const ANY = "$any$"
 
 const logComputed =
@@ -376,10 +377,7 @@ module.exports = (store) => {
             8
           )
         : null,
-    isoDateTimeToDate: (isoDateTime) =>
-      isoDateTime
-        ? formatISO(new Date(isoDateTime), { representation: "date" })
-        : null,
+    isoDateTimeToDate,
     isoDateTimeToWeek: (isoDateTime) => {
       if (!isoDateTime) return null
       const date = new Date(isoDateTime)
