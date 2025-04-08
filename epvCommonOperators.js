@@ -20,6 +20,7 @@ const map = require("lodash/map")
 const concat = require("lodash/concat")
 const split = require("lodash/split")
 const join = require("lodash/join")
+const values = require("lodash/values")
 const mapValues = require("lodash/mapValues")
 const mapKeys = require("lodash/mapKeys")
 const reverse = require("lodash/reverse")
@@ -75,6 +76,10 @@ const compareFr = new Intl.Collator("fr", { sensitivity: "base" }).compare
 
 module.exports = (store) => {
   const operators = {
+    logValues: (v, message) => {
+      console.log(message, v)
+      return v
+    },
     getPvOf: (id) => store.getFromE_pv(id), // à usage interne/spécifique seulement
     forEachTriplet: (cb) => store.forEachTriplet(cb), // à usage interne/spécifique seulement
     patchToRemoveAllPropsOf: (id) =>
@@ -159,6 +164,7 @@ module.exports = (store) => {
     localeInsensitiveContains: (string, substring) =>
       operators.localeInsensitiveIndexOf(string, substring) >= 0,
     ObjectKeys: (o) => Object.keys(o),
+    ObjectValues: (o) => values(o),
     reverse: (arr) => reverse(arr.slice()),
     toBoolean: (v) => !!v,
     not: (v) => !v,
