@@ -59,8 +59,10 @@ const formatCurrency = require("./operators/formatCurrency")
 const formatDate = require("./operators/formatDate")
 const formatDateTime = require("./operators/formatDateTime")
 const isoDateTimeToDate = require("./operators/isoDateTimeToDate")
+const ANY = "$any$"
+
 const isIn = (value, arr) => {
-  if (value === "$any$") return true
+  if (value === ANY) return true
   if (Array.isArray(arr)) {
     return includes(arr, value)
   }
