@@ -59,8 +59,16 @@ const formatCurrency = require("./operators/formatCurrency")
 const formatDate = require("./operators/formatDate")
 const formatDateTime = require("./operators/formatDateTime")
 const isoDateTimeToDate = require("./operators/isoDateTimeToDate")
-const ANY = "$any$"
-
+const isIn = (value, arr) => {
+  if (value === "$any$") return true
+  if (Array.isArray(arr)) {
+    return includes(arr, value)
+  }
+  if (typeof arr === "string") {
+    return includes(split(arr, ","), value)
+  }
+  return false
+}
 const logComputed =
   env === "dev"
     ? (fn, name) => (arg1, arg2) => {
@@ -312,6 +320,10 @@ module.exports = (store) => {
     equal: (arg1, arg2) => {
       const [v1, v2] = Array.isArray(arg1) ? arg1 : [arg1, arg2]
       return v1 === v2
+    },
+    isIn: (arg1, arg2) => {
+      const [v1, v2] = Array.isArray(arg1) ? arg1 : [arg1, arg2]
+      return isIn(v1, v2)
     },
     equalExp: (value, exp) => value === operators.query(exp),
     isTruthy: (v) => !!v,
