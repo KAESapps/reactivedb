@@ -25,22 +25,22 @@
     "cartesian": "1.0.1",
     "date-fns": "2.19.0",
     "fs-extra": "10.1.0",
-    "idb-keyval": "6.2.1",
+    "idb-keyval": "6.2.2",
     "idb-wrapper": "1.7.2",
-    "klogs": "github:KAESapps/klogs#45d9bbd7",
+    "kobs": "github:KAESapps/kobs#db92f22b94ee4c95da707811eeb5432aca217726",
     "ld-jsonstream": "2.0.2",
-    "locale-index-of": "1.0.7",
+    "locale-index-of": "1.0.8",
     "lodash": "4.17.21",
-    "match-sorter": "4.0.2",
-    "p-retry": "4.6.1",
+    "match-sorter": "4.2.1",
+    "p-retry": "4.6.2",
     "sanitize-filename": "1.6.3",
-    "shortid": "2.2.16"
+    "shortid": "2.2.17"
   },
   "prettier": {
     "trailingComma": "es5",
     "semi": false
   },
   "devDependencies": {
-    "eslint": "9.17.0"
+    "eslint": "9.29.0"
   }
 }
