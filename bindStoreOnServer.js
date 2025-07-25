@@ -2,6 +2,7 @@ const get = require("lodash/get")
 const watchable = require("./watchableStore")
 const isPromise = (v) => v && v.then
 const log = require("./log").sub("wsServer")
+const keepAliveDelay = 1000 * 30
 
 // create a watchable store from store and expose it on a ws server
 module.exports = (store, wss) =>
@@ -17,6 +18,17 @@ module.exports = (store, wss) =>
       ws.userId = userId
       log.debug("new ws connection for user", userName)
       logConnectedUsers()
+      // keep alive
+      ws.isAlive = true
+      const keepAliveInterval = setInterval(() => {
+        if (ws.isAlive === false) return ws.terminate() // déclenche l'événement close avec un code 1006
+        ws.ping()
+        ws.isAlive = false
+      }, keepAliveDelay)
+      ws.on("pong", () => {
+        ws.isAlive = true
+      })
+
       let send = (data) => {
         ws.send(JSON.stringify(data), (err) => {
           if (err)
@@ -56,14 +68,15 @@ module.exports = (store, wss) =>
         }
       })
       ws.on("close", (code) => {
-        const closedByUser = code == 1005
-        log.debug("connection closed", { userName, closedByUser })
+        // code 1001 : à l'initiative du client
+        // code 1005 : closedByUser
+        // code 1006 : closedByTerminating
+        log.debug("connection closed", { userName, code })
         logConnectedUsers()
         watchableStore.destroy()
+        clearInterval(keepAliveInterval)
       })
     })
     wss.on("error", reject)
-    // wss.on("listening", () => resolve(wss))
-    // je comprends pas trop mais avec le nouveau greenlock, l'événement listening n'est pas envoyé. Donc je résoud la promise directement
-    resolve(wss)
+    wss.on("listening", () => resolve(wss))
   })
