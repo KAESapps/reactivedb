@@ -78,5 +78,5 @@ module.exports = (store, wss) =>
       })
     })
     wss.on("error", reject)
-    wss.on("listening", () => resolve(wss))
+    resolve(wss)
   })
