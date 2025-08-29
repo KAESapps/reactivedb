@@ -22,6 +22,7 @@ const split = require("lodash/split")
 const join = require("lodash/join")
 const values = require("lodash/values")
 const mapValues = require("lodash/mapValues")
+const castArray = require("lodash/castArray")
 const mapKeys = require("lodash/mapKeys")
 const reverse = require("lodash/reverse")
 const difference = require("lodash/difference")
@@ -385,6 +386,7 @@ module.exports = (store) => {
     formatBoolean: (n) => (n ? "OUI" : "NON"),
     formatCurrency,
     toNumber,
+    castArray,
     toDateTime: ([date, time]) => {
       if (!date || !date.concat || !time) return
       return date.concat("T", time)
