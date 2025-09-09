@@ -50,8 +50,6 @@ const padStart = require("lodash/padStart")
 const matchSorter = require("match-sorter").default
 const localeIndexOf = require("locale-index-of")(Intl)
 const formatISO = require("date-fns/formatISO")
-const getISOWeek = require("date-fns/getISOWeek")
-const getISOWeekYear = require("date-fns/getISOWeekYear")
 const cartesian = require("cartesian")
 const obsMemoize = require("./obsMemoize")
 const formatInteger = require("./operators/formatInteger")
@@ -59,7 +57,7 @@ const formatDecimal = require("./operators/formatDecimal")
 const formatCurrency = require("./operators/formatCurrency")
 const formatDate = require("./operators/formatDate")
 const formatDateTime = require("./operators/formatDateTime")
-const isoDateTimeToDate = require("./operators/isoDateTimeToDate")
+const isoDateTimeToPrecision = require("./operators/isoDateTimeToPrecision")
 const ANY = "$any$"
 
 const isIn = (value, arr) => {
@@ -399,26 +397,10 @@ module.exports = (store) => {
             8
           )
         : null,
-    isoDateTimeToDate,
-    isoDateTimeToWeek: (isoDateTime) => {
-      if (!isoDateTime) return null
-      const date = new Date(isoDateTime)
-      return `${getISOWeekYear(date)}W${getISOWeek(date)}`
-    },
-    isoDateTimeToMonth: (isoDateTime) =>
-      isoDateTime
-        ? formatISO(new Date(isoDateTime), { representation: "date" }).slice(
-            0,
-            7
-          )
-        : null,
-    isoDateTimeToYear: (isoDateTime) =>
-      isoDateTime
-        ? formatISO(new Date(isoDateTime), { representation: "date" }).slice(
-            0,
-            4
-          )
-        : null,
+    isoDateTimeToDate: isoDateTimeToPrecision("date"),
+    isoDateTimeToWeek: isoDateTimeToPrecision("week"),
+    isoDateTimeToMonth: isoDateTimeToPrecision("month"),
+    isoDateTimeToYear: isoDateTimeToPrecision("year"),
     stringify: JSON.stringify,
     jsonParse: (v) => {
       try {

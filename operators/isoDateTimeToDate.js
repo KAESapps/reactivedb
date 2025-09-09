@@ -1,5 +1,2 @@
-const formatISO = require("date-fns/formatISO")
-module.exports = (isoDateTime) =>
-  isoDateTime
-    ? formatISO(new Date(isoDateTime), { representation: "date" })
-    : null
+const isoDateTimeToPrecision = require("./isoDateTimeToPrecision")
+module.exports = isoDateTimeToPrecision("date")
