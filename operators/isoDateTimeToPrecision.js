@@ -7,7 +7,7 @@ module.exports = (precision) => (arg) => {
   if (!arg) return null
   const date = new Date(arg)
   //TODO: if not isValid date return null
-  if (precision === "date") return formatISO(dt, { representation: "date" })
+  if (precision === "date") return formatISO(date, { representation: "date" })
   if (precision === "week") return `${getISOWeekYear(date)}W${getISOWeek(date)}`
   if (precision === "month")
     return formatISO(date, { representation: "date" }).slice(0, 7)
