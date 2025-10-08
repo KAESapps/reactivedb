@@ -2,6 +2,8 @@
 Accepte en argument une instance de date ou une chaine ISO (en fait un argument de new Date)
 */
 const formatISO = require("date-fns/formatISO")
+const getISOWeekYear = require("date-fns/getISOWeekYear")
+const getISOWeek = require("date-fns/getISOWeek")
 
 module.exports = (precision) => (arg) => {
   if (!arg) return null
