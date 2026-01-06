@@ -13,6 +13,7 @@ const isObjectLike = require("lodash/isObjectLike")
 const update = require("lodash/update")
 const without = require("lodash/without")
 const toString = require("lodash/toString")
+const toSimpleAscii = require("./operators/toSimpleAscii")
 
 const isValidPatch = (patch) =>
   every(patch, (v, k) => {
@@ -274,6 +275,9 @@ const match = (filter, pv) =>
         }
         if (op === "toString") {
           return toString(v) === opValue
+        }
+        if (op === "toSimpleAscii") {
+          return toSimpleAscii(v) === opValue // c'est à l'utilisateur de fournir opValue en simpleAscii (comme pour les autres op)
         }
       })
     } else {
