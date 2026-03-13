@@ -113,7 +113,8 @@ module.exports = (store) => {
       }
       return store.getEntitiesMatching(filter)
     },
-    findEntityMatching: (filter) => first(operators.entitiesMatching(filter)), // à remplacer par un appel à entitiesByValueOfProps
+    findEntityMatching: (filter) =>
+      first(operators.entitiesMatching(filter)) || null, // à remplacer par un appel à entitiesByValueOfProps
     entitiesWithValue: (prop, value) => store.getFromPve(prop, value),
     entityWithValue: (prop, value) => last(store.getFromPve(prop, value)),
     entitiesWithProp: (value, prop) => store.getFromPve(prop, value),
