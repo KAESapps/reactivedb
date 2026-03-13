@@ -1,12 +1,23 @@
 const get = require("lodash/get")
+const isInteger = require("lodash/isInteger")
 
-module.exports = (opt) => (n) => {
-  const digits = opt != null ? opt : 3
+module.exports = (opts) => (n) => {
+  if (opts == null) {
+    opts = { fractionDigits: 3 }
+  } else if (isInteger(opts)) {
+    opts = { fractionDigits: opts }
+  }
   if (!get(n, "toLocaleString") || isNaN(n)) return ""
   return n
-    .toLocaleString("fr", {
-      maximumFractionDigits: digits,
-      minimumFractionDigits: digits,
-    })
+    .toLocaleString(
+      "fr",
+      opts.fractionDigits == null
+        ? // si fractionDigits = null, nombre de décimales indéfini
+          {}
+        : {
+            maximumFractionDigits: opts.fractionDigits,
+            minimumFractionDigits: opts.fractionDigits,
+          }
+    )
     .replace(/\u202f/g, "\xa0") // parce que le "narrow non breaking space" ne s'affiche pas bien dans pdfmake
 }
