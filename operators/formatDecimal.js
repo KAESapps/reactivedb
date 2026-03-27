@@ -12,8 +12,8 @@ module.exports = (opts) => (n) => {
     .toLocaleString(
       "fr",
       opts.fractionDigits == null
-        ? // si fractionDigits = null, nombre de décimales indéfini
-          {}
+        ? // si fractionDigits non défini, on limite l'affichage à 6 pour éviter les débordements
+          { maximumFractionDigits: 6 }
         : {
             maximumFractionDigits: opts.fractionDigits,
             minimumFractionDigits: opts.fractionDigits,
