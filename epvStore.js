@@ -9,11 +9,9 @@ const every = require("lodash/every")
 const assign = require("lodash/assign")
 const concat = require("lodash/concat")
 const isUndefined = require("lodash/isUndefined")
-const isObjectLike = require("lodash/isObjectLike")
 const update = require("lodash/update")
 const without = require("lodash/without")
-const toString = require("lodash/toString")
-const toSimpleAscii = require("./operators/toSimpleAscii")
+const matchBy = require("./operators/utils/matchBy")
 
 const isValidPatch = (patch) =>
   every(patch, (v, k) => {
@@ -239,50 +237,14 @@ const entitiesContains = includes
 const entitiesRemove = pull
 const entitiesAdd = (entities, e) => entities.push(e)
 const match = (filter, pv) =>
-  every(filter, (propFilter, k) => {
+  matchBy(filter, (k) => {
     let v = pv && pv.get(k) // pv peut être undefined dans le cas où le patch a supprimé toutes mes props de e
     if (isObservable(v)) v = v.value
     // treating undefined values as null
     if (isUndefined(v)) {
       v = null
     }
-
-    if (isObjectLike(propFilter)) {
-      return every(propFilter, (opValue, op) => {
-        if (op === "eq") {
-          return v === opValue
-        }
-        if (op === "ne") {
-          return v !== opValue
-        }
-        if (op === "gt") {
-          return v > opValue
-        }
-        if (op === "gte") {
-          return v >= opValue
-        }
-        if (op === "lt") {
-          return v < opValue
-        }
-        if (op === "lte") {
-          return v <= opValue
-        }
-        if (op === "includes") {
-          return includes(v, opValue)
-        }
-        if (op === "oneOf") {
-          return includes(opValue, v)
-        }
-        if (op === "toString") {
-          return toString(v) === opValue
-        }
-        if (op === "toSimpleAscii") {
-          return toSimpleAscii(v) === opValue // c'est à l'utilisateur de fournir opValue en simpleAscii (comme pour les autres op)
-        }
-      })
-    } else {
-      return v === propFilter
-    }
+    return v
   })
 
 // teste si le patch peut avoir un impact sur le résultat du filtre
