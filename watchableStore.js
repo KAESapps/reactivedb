@@ -9,7 +9,8 @@ module.exports = (store, send) => {
   const unwatchs = new Map()
   const unwatchs2 = new Map()
 
-  const watch = ({ watchId, method = "query", arg }) => {
+  // ctx : contexte de l'appel (ex: { user } transmis par bindStoreOnServer), retransmis à la méthode observée
+  const watch = ({ watchId, method = "query", arg }, ctx) => {
     if (unwatchs.has(watchId)) {
       log.warn("watchId already active", { watchId })
       return { err: "watchId already in use" }
@@ -19,10 +20,10 @@ module.exports = (store, send) => {
       watchId,
       autorun(() => {
         let value
-        if (arg === undefined) {
+        if (arg === undefined && ctx === undefined) {
           value = store[method]()
         } else {
-          value = store[method](arg)
+          value = store[method](arg, ctx)
         }
         if (value !== previousValue) {
           // prevent sending value if it is the same as before
