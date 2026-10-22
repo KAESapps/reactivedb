@@ -49,7 +49,11 @@ module.exports = (store, wss) =>
           callId = data.callId
           res = watchableStore[data.method](data.arg, { user: userId })
         } catch (err) {
-          log.error("error responding to method call", err)
+          log.error(
+            "error responding to method call",
+            { method: data && data.method, userName },
+            err
+          )
           send({ callId, err: err ? err.toString() : "error" })
           throw err
         }
@@ -58,7 +62,11 @@ module.exports = (store, wss) =>
             //est-ce que le "return" est utile ?
             (v) => send({ callId, res: v }),
             (err) => {
-              log.error("error responding to method call", err)
+              log.error(
+                "error responding to method call",
+                { method: data.method, userName },
+                err
+              )
               send({ callId, err: err ? err.toString() : "error" })
               throw err
             }

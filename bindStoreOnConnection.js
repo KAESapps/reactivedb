@@ -17,7 +17,11 @@ module.exports = (store, conn) => {
         send({ callId, res })
       }
     } catch (err) {
-      console.error("error responding to method call", err)
+      console.error(
+        "error responding to method call",
+        { method: data && data.method },
+        err
+      )
       send({ callId, err: err ? err.toString() : "error" })
       throw err
     }
